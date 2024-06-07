@@ -14,3 +14,8 @@
 - [ ] Can integrate mediasoup for vcalls
 - [ ] Rate limiting
 - [ ] Auth
+- [ ] Deployments
+- [ ] CI/CD
+- [ ] Rate limiting
+- [ ] Domains, AWS instances
+- [ ] Auto Scaling?
