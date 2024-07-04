@@ -3,11 +3,11 @@
 #TODO: 
 
 - [x] Add monaco-editor/react for code editing
-- [ ] add Judge0 integration for submission
-- [ ] add multi language support
-- [ ] Ui improvements
-- [ ] add redis queue for problem submissions
-- [ ] web sockets to connect 2 users
+- [x] add Judge0 integration for submission
+- [x] add multi language support
+- [x] Ui improvements
+- [x] add redis queue for problem submissions
+- [x] web sockets to connect 2 users
 - [x] prisma ORM
 - [x] Postgres for storing submissions/ results/ ratings/ scores in competing rooms
 - [ ] Can use LiveBlocks for real time chat/ rooms
