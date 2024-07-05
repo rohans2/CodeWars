@@ -6,6 +6,11 @@
 - [x] add Judge0 integration for submission
 - [x] add multi language support
 - [x] Ui improvements
+- [ ] Add Recoil for tracking user data
+- [ ] Add upload functionality for test case upload
+- [ ] Add html parser for rendering problem description and examples correctly
+- [ ] Link judge0 and webhook to update UI correctly
+- [ ] AppBar changes
 - [x] add redis queue for problem submissions
 - [x] web sockets to connect 2 users
 - [x] prisma ORM
