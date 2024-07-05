@@ -7,6 +7,7 @@
 - [x] add multi language support
 - [x] Ui improvements
 - [ ] Add Recoil for tracking user data
+- [ ] Add Singleton, pub subs for web sockets 
 - [ ] Add upload functionality for test case upload
 - [ ] Add html parser for rendering problem description and examples correctly
 - [ ] Link judge0 and webhook to update UI correctly
