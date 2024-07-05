@@ -5,13 +5,16 @@ import jwt, { JwtPayload } from "jsonwebtoken"
 const prisma = new PrismaClient();
 export const userMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     const token = req.cookies?.token || null;
+    
     if(!token){
+        
         return res.status(401).json({
             message: "Unauthorized"
         })
     }
     try{
         const decoded =  jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
+        
         const user = await prisma.user.findUnique({
             where: {
                 email: decoded.email,
@@ -20,6 +23,7 @@ export const userMiddleware = async (req: Request, res: Response, next: NextFunc
         })
         
         if(!user){
+            console.log('user is null');
             return res.status(401).json({
                 message: "Unauthorized"
             })

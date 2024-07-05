@@ -40,6 +40,11 @@ userAuthRouter.post("/signin", async (req,res) => {
             message: "Invalid inputs"
         })
     }
+    if(!req.body.email || !req.body.password || req.body.email.length == 0 || req.body.password.length == 0 ){ 
+        return res.status(422).json({
+            message: "Invalid inputs"
+        })
+    }
 
     const email = req.body.email;
     const user = await prisma.user.findUnique({
@@ -56,13 +61,14 @@ userAuthRouter.post("/signin", async (req,res) => {
     }
     
     const passwordMatch = await bcrypt.compare(req.body.password, user.password)
+   
     if(!passwordMatch){
         return res.status(401).json({
             message: "Wrong password"
         })
     }
 
-    const token = jwt.sign({
+    const token =  jwt.sign({
         email: user.email
     }, process.env.JWT_SECRET!);
 
@@ -73,22 +79,33 @@ userAuthRouter.post("/signin", async (req,res) => {
 
 })
 
-userAuthRouter.post("signup", async (req,res) => {
+userAuthRouter.post("/signup", async (req,res) => {
     const success = signUpSchema.safeParse(req.body);
     if(!success){
         return res.status(422).json({
             message: "Invalid inputs"
         })
     }
+    if(!req.body.email || !req.body.password || req.body.email.length == 0 || req.body.password.length == 0 ){ 
+        return res.status(422).json({
+            message: "Invalid inputs"
+        })
+    }
+    const password = await bcrypt.hash(req.body.password, 10);
     const user = await prisma.user.create({
         data: {
             name: req.body?.name || "",
             email: req.body.email,
-            password: req.body.password,
+            password: password,
             role: "USER"
         }
     })
 
+    if(!user){
+        return res.status(400).json({
+            message: "User already exists"
+        })
+    }
     res.json({
         message: "user created successfully",
         id: user.id
@@ -102,12 +119,12 @@ userAuthRouter.post("/logout", (req,res) => {
     })
 })
 
-userAuthRouter.get("/problem/:id", userMiddleware, (req,res) => {
-    const id = Number(req.params.id);
+userAuthRouter.get("/problem/:slug", userMiddleware, async (req,res) => {
+    const slug = req.params.slug;
 
-    const problem = prisma.problem.findUnique({
+    const problem = await prisma.problem.findUnique({
         where: {
-            id: id
+            slug: slug
         }
     });
     
@@ -123,11 +140,11 @@ userAuthRouter.get("/problem/:id", userMiddleware, (req,res) => {
 })
 
 userAuthRouter.post("/problem/:id/submit", userMiddleware, (req,res) => {
-    // Implement problem submission, test case execution on EC2, using Redis queue
+    // Implement problem submission, test case execution on EC2, using Redis queue and Judge0
 })
 
-userAuthRouter.get("/problems", userMiddleware, (req,res) => {    
-        const problems = prisma.problem.findMany();
+userAuthRouter.get("/problems", userMiddleware, async (req,res) => {    
+        const problems = await prisma.problem.findMany();
         res.json({
             problems
         })

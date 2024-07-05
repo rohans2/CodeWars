@@ -14,7 +14,7 @@ datasource db {
 }
 
 model User {
-  id         Int          @id @default(autoincrement())
+  id         String       @id @default(uuid())
   name       String?
   email      String       @unique
   password   String
@@ -23,21 +23,34 @@ model User {
 }
 
 model Problem {
-  id          Int          @id @default(autoincrement())
-  slug        String
+  id          String       @id @default(uuid())
+  slug        String       @unique
   title       String
   description String
+  examples    String?
   difficulty  Difficulty
   Submission  Submission[]
   status      Status
+  defaultCode String?
+  TestCase    TestCase[]
 }
 
 model Submission {
-  id              Int     @id @default(autoincrement())
-  problemId       Int
-  submittedBy     Int
+  id              String  @id @default(uuid())
+  problemId       String
+  submittedBy     String
   problem         Problem @relation(fields: [problemId], references: [id])
   submittedByUser User    @relation(fields: [submittedBy], references: [id])
+}
+
+model TestCase {
+  id        String     @id @default(uuid())
+  problemId String
+  problem   Problem    @relation(fields: [problemId], references: [id])
+  status    CaseStatus
+  time      Int
+  memory    Int
+  createdAt DateTime   @default(now())
 }
 
 enum Role {
@@ -54,4 +67,13 @@ enum Difficulty {
 enum Status {
   PUBLISHED
   HIDDEN
+}
+
+enum CaseStatus {
+  ACCEPTED
+  WRONG_ANSWER
+  TIME_LIMIT_EXCEEDED
+  MEMORY_LIMIT_EXCEEDED
+  RUNTIME_ERROR
+  COMPILATION_ERROR
 }
