@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Problem } from "../utils/types";
+import { userAtom } from "../atoms/user";
+import { useRecoilValue } from "recoil";
 export const Problems = () => {
   const sampleProblems = [
     {
@@ -42,10 +44,15 @@ export const Problems = () => {
   ];
 
   const [problems, setProblems] = useState<Problem[]>([]);
-
+  const user = useRecoilValue(userAtom);
+  const navigate = useNavigate();
   useEffect(() => {
+    if (!user) {
+      navigate("/signin");
+      return;
+    }
     axios
-      .get("http://localhost:8080/api/v1/user/problems", {
+      .get(`http://localhost:8080/api/v1/${user.role.toLowerCase()}/problems`, {
         withCredentials: true,
       })
       .then((res) => {

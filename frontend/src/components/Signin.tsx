@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useState } from "react";
+import { userAtom } from "../atoms/user";
+import { useSetRecoilState } from "recoil";
 
 export const Signin = ({
   isSignIn,
@@ -14,6 +16,7 @@ export const Signin = ({
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
+  const setUser = useSetRecoilState(userAtom);
   return (
     <section className="bg-gray-900">
       <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
@@ -115,6 +118,11 @@ export const Signin = ({
                 }
                 setLoading(false);
                 if (res.status === 200) {
+                  setUser({
+                    email: email,
+                    name: name,
+                    role: isAdmin ? "ADMIN" : "USER",
+                  });
                   navigate("/problems");
                 } else {
                   alert("Something went wrong");

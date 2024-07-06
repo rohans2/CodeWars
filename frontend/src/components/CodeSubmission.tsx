@@ -1,24 +1,34 @@
 import { Editor } from "@monaco-editor/react";
 import { useEffect, useState } from "react";
 // import Markdown from "react-markdown";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 // import remarkGfm from "remark-gfm";
 import { Problem } from "../utils/types";
 import axios from "axios";
 import { ProblemComponent } from "./Problem";
 import { LanguageSelector } from "./LanguageSelector";
+import { useRecoilValue } from "recoil";
+import { userAtom } from "../atoms/user";
 
 export const CodeSubmission = () => {
   const params = useParams();
   const slug = params.slug;
   console.log("slug", slug);
   const [problem, setProblem] = useState<Problem | null>(null);
-
+  const user = useRecoilValue(userAtom);
+  const navigate = useNavigate();
   useEffect(() => {
+    if (!user) {
+      navigate("/signin");
+      return;
+    }
     axios
-      .get(`http://localhost:8080/api/v1/user/problem/${slug}`, {
-        withCredentials: true,
-      })
+      .get(
+        `http://localhost:8080/api/v1/${user.role.toLowerCase()}/problem/${slug}`,
+        {
+          withCredentials: true,
+        }
+      )
       .then((res) => {
         if (res.status !== 200) {
           setProblem(null);
@@ -27,7 +37,7 @@ export const CodeSubmission = () => {
         console.log(res.data);
         setProblem(res.data.problem);
       });
-  }, [slug]);
+  }, [slug, navigate, user]);
 
   if (!problem) {
     return <div>Loading...</div>;

@@ -12,3 +12,9 @@ export type Example = {
   input: string;
   output: string;
 };
+
+export type User = {
+  email: string;
+  name?:string;
+  role: "USER" | "ADMIN";
+}

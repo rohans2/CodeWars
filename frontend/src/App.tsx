@@ -12,6 +12,7 @@ import { AppBar } from "./components/AppBar";
 import { WarRoom } from "./components/WarRoom";
 import { CreateRoom } from "./components/CreateRoom";
 import { AdminPanel } from "./components/AdminPanel";
+import { RecoilRoot } from "recoil";
 
 //import { useState } from "react";
 
@@ -20,26 +21,28 @@ function App() {
 
   return (
     <div>
-      <AppBar />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/problem/:slug" element={<CodeSubmission />} />
-          <Route path="/signin" element={<Signin isSignIn={true} />} />
-          <Route
-            path="/admin/signin"
-            element={<Signin isSignIn={true} isAdmin={true} />}
-          />
-          <Route path="/signup" element={<Signin isSignIn={false} />} />
-          <Route path="/problems" element={<Problems />} />
-          {/* <Route path="/compete" element={<Problems />} /> */}
-          <Route
-            path="/compete/:roomId/:password"
-            element={<WarRoomWrapper />}
-          />
-          <Route path="/rooms" element={<CreateRoomWrapper />} />
-          <Route path="/admin/post" element={<AdminPanel />} />
-        </Routes>
-      </BrowserRouter>
+      <RecoilRoot>
+        <BrowserRouter>
+          <AppBar />
+          <Routes>
+            <Route path="/problem/:slug" element={<CodeSubmission />} />
+            <Route path="/signin" element={<Signin isSignIn={true} />} />
+            <Route
+              path="/admin/signin"
+              element={<Signin isSignIn={true} isAdmin={true} />}
+            />
+            <Route path="/signup" element={<Signin isSignIn={false} />} />
+            <Route path="/problems" element={<Problems />} />
+            {/* <Route path="/compete" element={<Problems />} /> */}
+            <Route
+              path="/compete/:roomId/:password"
+              element={<WarRoomWrapper />}
+            />
+            <Route path="/rooms" element={<CreateRoomWrapper />} />
+            <Route path="/admin/post" element={<AdminPanel />} />
+          </Routes>
+        </BrowserRouter>
+      </RecoilRoot>
       {/* <CodeSubmission /> */}
     </div>
   );

@@ -31,7 +31,7 @@ export const ProblemComponent = ({ problem }: { problem: Problem }) => {
                       </span>
                     </code>
                     <p className="mt-1">Output:</p>
-                    <code className="text-sm sm:text-base inline-flex text-left items-center space-x-4 bg-gray-800 text-white rounded-lg p-4 pl-4">
+                    <code className="mt-1 text-sm sm:text-base inline-flex text-left items-center space-x-4 bg-gray-800 text-white rounded-lg p-4 pl-4">
                       <span className="flex gap-4">
                         <span className="flex-1">
                           <span>{example.output}</span>
