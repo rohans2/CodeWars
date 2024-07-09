@@ -22,6 +22,8 @@ const zod_1 = __importDefault(require("zod"));
 const client_1 = require("@prisma/client");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const userMiddleware_1 = require("../middlewares/userMiddleware");
+const utils_1 = require("../utils/utils");
+const axios_1 = __importDefault(require("axios"));
 const prisma = new client_1.PrismaClient();
 exports.userAuthRouter.use((0, cookie_parser_1.default)());
 exports.userAuthRouter.use(express_1.default.json());
@@ -29,6 +31,7 @@ exports.userAuthRouter.use((0, cors_1.default)({
     credentials: true,
     origin: "http://localhost:5173"
 }));
+const JUDGE0_URI = "";
 const signInSchema = zod_1.default.object({
     email: zod_1.default.string().email(),
     password: zod_1.default.string().min(8)
@@ -37,6 +40,11 @@ const signUpSchema = zod_1.default.object({
     name: zod_1.default.string().optional(),
     email: zod_1.default.string().email(),
     password: zod_1.default.string().min(8)
+});
+const submissionSchema = zod_1.default.object({
+    slug: zod_1.default.string(),
+    code: zod_1.default.string(),
+    languageId: zod_1.default.number(),
 });
 exports.userAuthRouter.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const success = signInSchema.safeParse(req.body);
@@ -130,9 +138,79 @@ exports.userAuthRouter.get("/problem/:slug", userMiddleware_1.userMiddleware, (r
         problem
     });
 }));
-exports.userAuthRouter.post("/problem/:id/submit", userMiddleware_1.userMiddleware, (req, res) => {
+exports.userAuthRouter.post("/problem/submit", userMiddleware_1.userMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // Implement problem submission, test case execution on EC2, using Redis queue and Judge0
-});
+    const success = submissionSchema.safeParse(req.body);
+    if (!success) {
+        return res.status(422).json({
+            message: "Invalid inputs"
+        });
+    }
+    const problemSlug = req.body.slug;
+    const problem = yield prisma.problem.findUnique({
+        where: {
+            slug: problemSlug
+        }
+    });
+    if (!problem) {
+        return res.status(404).json({
+            message: "Problem not found"
+        });
+    }
+    const problemArgs = yield (0, utils_1.getProblem)(problem.slug);
+    const response = yield axios_1.default.post(`${JUDGE0_URI}/submissions/batch?base64_encoded = false`, {
+        submissions: problemArgs.inputs.map((input, index) => {
+            return {
+                language_id: req.body.languageId,
+                source_code: req.body.code,
+                stdin: input,
+                expected_output: problemArgs.outputs[index]
+            };
+        })
+    });
+    const submission = yield prisma.submission.create({
+        data: {
+            problemId: req.body.problemId,
+            //@ts-ignore
+            submittedBy: req.userId,
+            code: req.body.code,
+            testCases: {
+                connect: response.data,
+            }
+        },
+        include: {
+            testCases: true
+        }
+    });
+    res.status(200).json({
+        message: "Submission successful",
+        id: submission.id
+    });
+}));
+exports.userAuthRouter.get("/submission/:id", userMiddleware_1.userMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.params.id;
+    if (!id) {
+        return res.status(400).json({
+            message: "Invalid id"
+        });
+    }
+    const submission = yield prisma.submission.findUnique({
+        where: {
+            id: id
+        },
+        include: {
+            testCases: true
+        }
+    });
+    if (!submission) {
+        return res.json(404).json({
+            message: "Submission not found"
+        });
+    }
+    res.status(200).json({
+        submission
+    });
+}));
 exports.userAuthRouter.get("/problems", userMiddleware_1.userMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const problems = yield prisma.problem.findMany();
     res.json({

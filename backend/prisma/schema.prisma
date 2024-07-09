@@ -36,21 +36,25 @@ model Problem {
 }
 
 model Submission {
-  id              String  @id @default(uuid())
+  id              String     @id @default(uuid())
   problemId       String
   submittedBy     String
-  problem         Problem @relation(fields: [problemId], references: [id])
-  submittedByUser User    @relation(fields: [submittedBy], references: [id])
+  code            String
+  testCases       TestCase[]
+  problem         Problem    @relation(fields: [problemId], references: [id])
+  submittedByUser User       @relation(fields: [submittedBy], references: [id])
 }
 
 model TestCase {
-  id        String     @id @default(uuid())
-  problemId String
-  problem   Problem    @relation(fields: [problemId], references: [id])
-  status    CaseStatus
-  time      Int
-  memory    Int
-  createdAt DateTime   @default(now())
+  id           String      @id @default(uuid())
+  problemId    String
+  problem      Problem     @relation(fields: [problemId], references: [id])
+  status       CaseStatus
+  time         Int
+  memory       Int
+  createdAt    DateTime    @default(now())
+  Submission   Submission? @relation(fields: [submissionId], references: [id])
+  submissionId String?
 }
 
 enum Role {

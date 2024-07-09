@@ -9,6 +9,7 @@ import { ProblemComponent } from "./Problem";
 import { LanguageSelector } from "./LanguageSelector";
 import { useRecoilValue } from "recoil";
 import { userAtom } from "../atoms/user";
+import { ProblemSubmitBar } from "./ProblemSubmitBar";
 
 export const CodeSubmission = () => {
   const params = useParams();
@@ -43,11 +44,11 @@ export const CodeSubmission = () => {
     return <div>Loading...</div>;
   }
   return (
-    <div className="grid grid-cols-2 gap-x-5 max-h-screen]">
-      <div className="ml-5 mt-6 p-6 min-w-1/2 h-[calc(100vh-65px)]">
+    <div className="grid grid-cols-2 gap-x-5 h-[90vh]">
+      <div className="ml-5 mt-6  p-6 min-w-1/2 overflow-auto">
         <ProblemComponent problem={problem} />
       </div>
-      <div className="flex flex-col gap-y-2 p-5">
+      <div className="flex flex-col gap-y-2 p-5 h-[85vh]">
         <LanguageSelector />
         <Editor
           defaultLanguage="Java"
@@ -56,12 +57,8 @@ export const CodeSubmission = () => {
           height={"90%"}
           className="max-w-1/2"
         />
-        <button
-          type="button"
-          className="md:w-1/3 lg:w-1/4 text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none  focus:ring-blue-800 shadow-lg shadow-blue-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 mt-4"
-        >
-          Submit
-        </button>
+
+        <ProblemSubmitBar />
       </div>
     </div>
   );

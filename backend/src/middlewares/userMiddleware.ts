@@ -28,6 +28,8 @@ export const userMiddleware = async (req: Request, res: Response, next: NextFunc
                 message: "Unauthorized"
             })
         }
+        //@ts-ignore
+        req.userId = user.id;
         next()
 
 

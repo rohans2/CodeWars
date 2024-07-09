@@ -137,10 +137,10 @@ adminAuthRouter.get("/problems", adminMiddleware, async(req,res) => {
     })
 })
 
-adminAuthRouter.get("/problem/:id", adminMiddleware, async (req,res) => {
+adminAuthRouter.get("/problem/:slug", adminMiddleware, async (req,res) => {
     const problem = await prisma.problem.findFirst({
         where: {
-            id: req.params?.id
+            slug: req.params?.slug
         }
     });
     if(!problem){

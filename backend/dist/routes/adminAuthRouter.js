@@ -130,11 +130,11 @@ exports.adminAuthRouter.get("/problems", adminMiddleware_1.adminMiddleware, (req
         problems
     });
 }));
-exports.adminAuthRouter.get("/problem/:id", adminMiddleware_1.adminMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.adminAuthRouter.get("/problem/:slug", adminMiddleware_1.adminMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _b;
     const problem = yield prisma.problem.findFirst({
         where: {
-            id: (_b = req.params) === null || _b === void 0 ? void 0 : _b.id
+            slug: (_b = req.params) === null || _b === void 0 ? void 0 : _b.slug
         }
     });
     if (!problem) {

@@ -38,6 +38,8 @@ const userMiddleware = (req, res, next) => __awaiter(void 0, void 0, void 0, fun
                 message: "Unauthorized"
             });
         }
+        //@ts-ignore
+        req.userId = user.id;
         next();
     }
     catch (e) {
