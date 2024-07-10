@@ -158,7 +158,7 @@ exports.userAuthRouter.post("/problem/submit", userMiddleware_1.userMiddleware, 
         });
     }
     const problemArgs = yield (0, utils_1.getProblem)(problem.slug);
-    const response = yield axios_1.default.post(`${JUDGE0_URI}/submissions/batch?base64_encoded = false`, {
+    const response = yield axios_1.default.post(`${JUDGE0_URI}/submissions/batch?base64_encoded=false`, {
         submissions: problemArgs.inputs.map((input, index) => {
             return {
                 language_id: req.body.languageId,

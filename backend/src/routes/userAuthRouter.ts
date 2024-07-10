@@ -172,7 +172,7 @@ userAuthRouter.post("/problem/submit", userMiddleware, async (req,res) => {
     }
     const problemArgs = await getProblem(problem.slug);
 
-    const response = await axios.post(`${JUDGE0_URI}/submissions/batch?base64_encoded = false`,
+    const response = await axios.post(`${JUDGE0_URI}/submissions/batch?base64_encoded=false`,
         {
             submissions: problemArgs.inputs.map((input, index) => {
                 return {
