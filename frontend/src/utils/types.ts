@@ -1,4 +1,5 @@
 export type Problem = {
+  id: string;
   slug: string;
   title: string;
   description: string;

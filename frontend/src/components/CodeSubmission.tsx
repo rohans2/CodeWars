@@ -10,11 +10,14 @@ import { LanguageSelector } from "./LanguageSelector";
 import { useRecoilValue } from "recoil";
 import { userAtom } from "../atoms/user";
 import { ProblemSubmitBar } from "./ProblemSubmitBar";
+import { LANGUAGE_MAPPING } from "../utils/constants";
 
 export const CodeSubmission = () => {
   const params = useParams();
   const slug = params.slug;
   console.log("slug", slug);
+  const [code, setCode] = useState<Record<string, string>>({});
+  const [language, setLanguage] = useState("cpp");
   const [problem, setProblem] = useState<Problem | null>(null);
   const user = useRecoilValue(userAtom);
   const navigate = useNavigate();
@@ -49,16 +52,29 @@ export const CodeSubmission = () => {
         <ProblemComponent problem={problem} />
       </div>
       <div className="flex flex-col gap-y-2 p-5 h-[85vh]">
-        <LanguageSelector />
+        <LanguageSelector language={language} setLanguage={setLanguage} />
         <Editor
-          defaultLanguage="Java"
+          defaultLanguage="cpp"
           defaultValue="// Your code here"
           theme="vs-dark"
           height={"90%"}
+          value={code[language]}
+          options={{
+            fontSize: 14,
+          }}
+          language={LANGUAGE_MAPPING[language]?.monaco}
+          onChange={(value) => {
+            setCode({ ...code, [language]: value } as Record<string, string>);
+          }}
           className="max-w-1/2"
         />
 
-        <ProblemSubmitBar />
+        <ProblemSubmitBar
+          code={code[language]}
+          languageId={language}
+          problemId={problem.id}
+          slug={problem.slug}
+        />
       </div>
     </div>
   );

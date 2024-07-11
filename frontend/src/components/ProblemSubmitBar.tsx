@@ -16,7 +16,7 @@ export const ProblemSubmitBar = ({
   problemId,
 }: {
   code: string;
-  languageId: number;
+  languageId: string;
   slug: string;
   problemId: string;
 }) => {
@@ -176,15 +176,19 @@ export const ProblemSubmitBar = ({
           <div>
             <button
               type="button"
+              disabled={status === SubmitStatus.PENDING}
+              onClick={submit}
               className="h-full text-black bg-blue-200  hover:bg-blue-100 focus:outline-none    font-medium text-sm px-8 py-4 text-center m-0"
             >
-              Run
+              {status === SubmitStatus.PENDING ? "Running" : "Run"}
             </button>
             <button
               type="button"
+              onClick={submit}
+              disabled={status === SubmitStatus.PENDING}
               className="h-full text-white bg-blue-600  hover:bg-blue-700 focus:outline-none    font-medium text-sm px-8 py-4 text-center m-0"
             >
-              Submit
+              {status === SubmitStatus.PENDING ? "Submitting" : "Submit"}
             </button>
           </div>
         </button>
