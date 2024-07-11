@@ -10,7 +10,7 @@ services:
     volumes:
       - ./judge0.conf:/judge0.conf:ro
       - type: bind
-        source: /codeWars/backend/src/problems
+        source: /CodeWars/backend/src/problems
         target: /dev/problems
     ports:
       - "2358:2358"
@@ -24,7 +24,7 @@ services:
     volumes:
       - ./judge0.conf:/judge0.conf:ro
       - type: bind
-        source: /codeWars/backend/src/problems
+        source: /CodeWars/backend/src/problems
         target: /dev/problems
     privileged: true
     <<: *default-logging
