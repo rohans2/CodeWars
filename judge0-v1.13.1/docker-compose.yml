@@ -24,7 +24,7 @@ services:
     volumes:
       - ./judge0.conf:/judge0.conf:ro
       - type: bind
-        source: "backend/src/problems"
+        source: "codeWars/backend/src/problems"
         target: /dev/problems
     privileged: true
     <<: *default-logging
