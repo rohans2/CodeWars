@@ -12,6 +12,8 @@ services:
       - "2358:2358"
     privileged: true
     restart: always
+    logging:
+      driver: none
 
   workers:
     image: judge0/judge0:1.13.1
@@ -23,6 +25,8 @@ services:
         target: /dev/problems
     privileged: true
     restart: always
+    logging:
+      driver: none
 
   db:
     image: postgres:16.2
@@ -30,6 +34,8 @@ services:
     volumes:
       - data:/var/lib/postgresql/data/
     restart: always
+    logging:
+      driver: none
 
   redis:
     image: redis:7.2.4
@@ -41,6 +47,12 @@ services:
       ]
     env_file: judge0.conf
     restart: always
+    volumes:
+      - cache:/data
+    logging:
+      driver: none
 
 volumes:
   data:
+  cache:
+    driver: local
