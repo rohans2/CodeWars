@@ -71,7 +71,7 @@ export const CodeSubmission = () => {
 
         <ProblemSubmitBar
           code={code[language]}
-          languageId={language}
+          languageId={LANGUAGE_MAPPING[language]?.judge0}
           problemId={problem.id}
           slug={problem.slug}
         />

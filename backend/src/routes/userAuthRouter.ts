@@ -21,7 +21,7 @@ userAuthRouter.use(cors({
     origin: "http://localhost:5173"
 }));
 
-const JUDGE0_URI = "";
+const JUDGE0_URI = "http://3.128.90.76:2358/";
 
 const signInSchema = z.object({
     email: z.string().email(),
@@ -179,11 +179,14 @@ userAuthRouter.post("/problem/submit", userMiddleware, async (req,res) => {
                     language_id: req.body.languageId,
                     source_code: req.body.code,
                     stdin: input,
-                    expected_output: problemArgs.outputs[index]
+                    expected_output: problemArgs.outputs[index],
+                    callback_url: "http://3.128.90.76:3000/submission"
                 }
             })
         }
     )
+    console.log("response");
+    //console.log(response.data)
 
     const submission = await prisma.submission.create({
         data: {
@@ -192,7 +195,7 @@ userAuthRouter.post("/problem/submit", userMiddleware, async (req,res) => {
             submittedBy: req.userId,
             code: req.body.code,
             testCases: {
-                connect: response.data,
+                create: response.data,
             }
         },
         include: {

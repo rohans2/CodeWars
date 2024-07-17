@@ -4,7 +4,9 @@ interface IProblem {
     inputs: string[];
     outputs: string[];
 }
-const BASE_DIR = "/home/ubuntu/codeWars/backend/src/problems";
+//const BASE_DIR = "/home/ubuntu/codeWars/backend/src/problems";
+const BASE_DIR = "../backend/src/problems";
+
 export const getProblem = async (slug: string): Promise<IProblem> => {
     const inputs = await getInputs(slug);
     const outputs = await getOutputs(slug);

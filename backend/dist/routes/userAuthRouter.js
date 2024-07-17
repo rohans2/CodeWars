@@ -31,7 +31,7 @@ exports.userAuthRouter.use((0, cors_1.default)({
     credentials: true,
     origin: "http://localhost:5173"
 }));
-const JUDGE0_URI = "";
+const JUDGE0_URI = "http://3.128.90.76:2358/";
 const signInSchema = zod_1.default.object({
     email: zod_1.default.string().email(),
     password: zod_1.default.string().min(8)
@@ -164,10 +164,13 @@ exports.userAuthRouter.post("/problem/submit", userMiddleware_1.userMiddleware, 
                 language_id: req.body.languageId,
                 source_code: req.body.code,
                 stdin: input,
-                expected_output: problemArgs.outputs[index]
+                expected_output: problemArgs.outputs[index],
+                callback_url: "http://3.128.90.76:3000/submission"
             };
         })
     });
+    console.log("response");
+    //console.log(response.data)
     const submission = yield prisma.submission.create({
         data: {
             problemId: req.body.problemId,
@@ -175,7 +178,7 @@ exports.userAuthRouter.post("/problem/submit", userMiddleware_1.userMiddleware, 
             submittedBy: req.userId,
             code: req.body.code,
             testCases: {
-                connect: response.data,
+                create: response.data,
             }
         },
         include: {

@@ -7,7 +7,7 @@ export const userMiddleware = async (req: Request, res: Response, next: NextFunc
     const token = req.cookies?.token || null;
     
     if(!token){
-        
+        console.log('token is null')
         return res.status(401).json({
             message: "Unauthorized"
         })
@@ -34,6 +34,7 @@ export const userMiddleware = async (req: Request, res: Response, next: NextFunc
 
 
     }catch(e){
+        console.log('token is null CATCH')
         return res.status(401).json({
             message: "Unauthorized"
         })

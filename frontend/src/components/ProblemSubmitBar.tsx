@@ -16,7 +16,7 @@ export const ProblemSubmitBar = ({
   problemId,
 }: {
   code: string;
-  languageId: string;
+  languageId: number;
   slug: string;
   problemId: string;
 }) => {
@@ -95,9 +95,13 @@ export const ProblemSubmitBar = ({
     }
 
     const res = await axios.get(
-      `http://localhost:8080/api/v1/user/submission/?id=${id}`
+      `http://localhost:8080/api/v1/user/submission/?id=${id}`,
+      {
+        withCredentials: true,
+      }
     );
 
+    console.log(res.data);
     if (res.data.submission.status === SubmitStatus.PENDING) {
       setTestCases(res.data.submission.testCases);
       await new Promise((resolve) => setTimeout(resolve, 2 * 1000));
@@ -130,6 +134,9 @@ export const ProblemSubmitBar = ({
           languageId,
           slug,
           problemId,
+        },
+        {
+          withCredentials: true,
         }
       );
       poll(res.data.id, 10);
