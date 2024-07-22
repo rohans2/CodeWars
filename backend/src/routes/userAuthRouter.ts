@@ -21,7 +21,7 @@ userAuthRouter.use(cors({
     origin: "http://localhost:5173"
 }));
 
-const JUDGE0_URI = "http://3.128.90.76:2358/";
+
 
 const signInSchema = z.object({
     email: z.string().email(),
@@ -172,7 +172,7 @@ userAuthRouter.post("/problem/submit", userMiddleware, async (req,res) => {
     }
     const problemArgs = await getProblem(problem.slug);
 
-    const response = await axios.post(`${JUDGE0_URI}/submissions/batch?base64_encoded=false`,
+    const response = await axios.post(`${process.env.JUDGE0_URI}/submissions/batch?base64_encoded=false`,
         {
             submissions: problemArgs.inputs.map((input, index) => {
                 return {
@@ -180,7 +180,7 @@ userAuthRouter.post("/problem/submit", userMiddleware, async (req,res) => {
                     source_code: req.body.code,
                     stdin: input,
                     expected_output: problemArgs.outputs[index],
-                    callback_url: "http://3.128.90.76:3000/submission"
+                    callback_url: `${process.env.SUBMISSION_WEBHOOK_URL}/submission` 
                 }
             })
         }
@@ -216,7 +216,7 @@ userAuthRouter.get("/submission/:id", userMiddleware, async (req,res) => {
             message: "Invalid id"
         })
     }
-    const submission = await prisma.submission.findUnique({
+    let submission = await prisma.submission.findUnique({
         where: {
             id: id
         }, 
@@ -224,6 +224,27 @@ userAuthRouter.get("/submission/:id", userMiddleware, async (req,res) => {
             testCases: true
         }
     })
+
+    const testCasesPassed = submission?.testCases.filter((testCase) => testCase.status_id === 3);
+    const testCasesPending = submission?.testCases.filter((testCase) => {
+        return testCase.status_id === 2 || testCase.status_id === 1;
+    });
+
+    if(testCasesPending?.length === 0){
+        submission = await prisma.submission.update({
+            where: {
+                id: id
+            },
+            data: {
+                status: testCasesPassed?.length === submission?.testCases.length ? "ACCEPTED" : "REJECTED"
+            },
+            include: {
+                testCases: true
+            }
+        });
+    }
+
+    
 
     if(!submission) {
         return res.json(404).json({

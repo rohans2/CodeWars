@@ -6,7 +6,7 @@ enum SubmitStatus {
   SUBMIT = "SUBMIT",
   PENDING = "PENDING",
   ACCEPTED = "ACCEPTED",
-  FAILED = "FAILED",
+  FAILED = "REJECTED",
 }
 
 export const ProblemSubmitBar = ({
@@ -107,7 +107,7 @@ export const ProblemSubmitBar = ({
       await new Promise((resolve) => setTimeout(resolve, 2 * 1000));
       poll(id, retries - 1);
     } else {
-      if (res.data.submission.status === "AC") {
+      if (res.data.submission.status === "ACCEPTED") {
         setStatus(SubmitStatus.ACCEPTED);
         setTestCases(res.data.submission.testCases);
         alert("Submission accepted!");

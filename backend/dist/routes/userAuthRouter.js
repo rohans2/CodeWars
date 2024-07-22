@@ -31,7 +31,7 @@ exports.userAuthRouter.use((0, cors_1.default)({
     credentials: true,
     origin: "http://localhost:5173"
 }));
-const JUDGE0_URI = "http://3.128.90.76:2358/";
+const JUDGE0_URI = "http://18.222.227.224:2358/";
 const signInSchema = zod_1.default.object({
     email: zod_1.default.string().email(),
     password: zod_1.default.string().min(8)
@@ -165,7 +165,7 @@ exports.userAuthRouter.post("/problem/submit", userMiddleware_1.userMiddleware, 
                 source_code: req.body.code,
                 stdin: input,
                 expected_output: problemArgs.outputs[index],
-                callback_url: "http://3.128.90.76:3000/submission"
+                callback_url: "http://18.222.227.224:3000/submission"
             };
         })
     });

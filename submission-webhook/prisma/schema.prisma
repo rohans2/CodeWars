@@ -12,3 +12,76 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id         String       @id @default(uuid())
+  name       String?
+  email      String       @unique
+  password   String
+  role       Role         @default(USER)
+  Submission Submission[]
+}
+
+model Problem {
+  id          String       @id @default(uuid())
+  slug        String       @unique
+  title       String
+  description String
+  examples    String?
+  difficulty  Difficulty
+  Submission  Submission[]
+  status      Status
+  defaultCode String?
+  TestCase    TestCase[]
+}
+
+model Submission {
+  id              String     @id @default(uuid())
+  problemId       String
+  submittedBy     String
+  code            String
+  testCases       TestCase[]
+  problem         Problem    @relation(fields: [problemId], references: [id])
+  submittedByUser User       @relation(fields: [submittedBy], references: [id])
+  token           String?    @unique
+}
+
+model TestCase {
+  id           String      @id @default(uuid())
+  problemId    String?
+  problem      Problem?    @relation(fields: [problemId], references: [id])
+  status       CaseStatus  @default(SUBMIT)
+  status_id    Int?        @default(1)
+  time         Int?
+  memory       Int?
+  token        String?     @unique
+  createdAt    DateTime    @default(now())
+  Submission   Submission? @relation(fields: [submissionId], references: [id])
+  submissionId String?
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum Status {
+  PUBLISHED
+  HIDDEN
+}
+
+enum CaseStatus {
+  ACCEPTED
+  SUBMIT
+  WRONG_ANSWER
+  TIME_LIMIT_EXCEEDED
+  MEMORY_LIMIT_EXCEEDED
+  RUNTIME_ERROR
+  COMPILATION_ERROR
+}

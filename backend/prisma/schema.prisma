@@ -36,14 +36,15 @@ model Problem {
 }
 
 model Submission {
-  id              String     @id @default(uuid())
+  id              String           @id @default(uuid())
   problemId       String
   submittedBy     String
   code            String
   testCases       TestCase[]
-  problem         Problem    @relation(fields: [problemId], references: [id])
-  submittedByUser User       @relation(fields: [submittedBy], references: [id])
-  token           String?    @unique
+  status          SubmissionStatus @default(PENDING)
+  problem         Problem          @relation(fields: [problemId], references: [id])
+  submittedByUser User             @relation(fields: [submittedBy], references: [id])
+  token           String?          @unique
 }
 
 model TestCase {
@@ -51,6 +52,7 @@ model TestCase {
   problemId    String?
   problem      Problem?    @relation(fields: [problemId], references: [id])
   status       CaseStatus  @default(SUBMIT)
+  status_id    Int?        @default(1)
   time         Int?
   memory       Int?
   token        String?     @unique
@@ -83,4 +85,10 @@ enum CaseStatus {
   MEMORY_LIMIT_EXCEEDED
   RUNTIME_ERROR
   COMPILATION_ERROR
+}
+
+enum SubmissionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
 }
