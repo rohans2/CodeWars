@@ -95,7 +95,7 @@ export const ProblemSubmitBar = ({
     }
 
     const res = await axios.get(
-      `http://localhost:8080/api/v1/user/submission/?id=${id}`,
+      `http://localhost:8080/api/v1/user/submission/${id}`,
       {
         withCredentials: true,
       }
@@ -114,7 +114,7 @@ export const ProblemSubmitBar = ({
         return;
       } else {
         setStatus(SubmitStatus.FAILED);
-        alert("Submission failed!");
+        alert("Submission Rejected!");
         setTestCases(res.data.submission.testCases);
         return;
       }

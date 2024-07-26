@@ -63,4 +63,3 @@ const getOutputs = async(slug: string): Promise<string[]> => {
     })
 }
 
-export const JUDGE0_URI = "http://18.222.227.224:2358/";

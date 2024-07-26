@@ -31,7 +31,6 @@ exports.userAuthRouter.use((0, cors_1.default)({
     credentials: true,
     origin: "http://localhost:5173"
 }));
-const JUDGE0_URI = "http://18.222.227.224:2358/";
 const signInSchema = zod_1.default.object({
     email: zod_1.default.string().email(),
     password: zod_1.default.string().min(8)
@@ -158,14 +157,14 @@ exports.userAuthRouter.post("/problem/submit", userMiddleware_1.userMiddleware, 
         });
     }
     const problemArgs = yield (0, utils_1.getProblem)(problem.slug);
-    const response = yield axios_1.default.post(`${JUDGE0_URI}/submissions/batch?base64_encoded=false`, {
+    const response = yield axios_1.default.post(`${process.env.JUDGE0_URI}/submissions/batch?base64_encoded=false`, {
         submissions: problemArgs.inputs.map((input, index) => {
             return {
                 language_id: req.body.languageId,
                 source_code: req.body.code,
                 stdin: input,
                 expected_output: problemArgs.outputs[index],
-                callback_url: "http://18.222.227.224:3000/submission"
+                callback_url: `${process.env.SUBMISSION_WEBHOOK_URL}/submission`
             };
         })
     });
@@ -197,7 +196,7 @@ exports.userAuthRouter.get("/submission/:id", userMiddleware_1.userMiddleware, (
             message: "Invalid id"
         });
     }
-    const submission = yield prisma.submission.findUnique({
+    let submission = yield prisma.submission.findUnique({
         where: {
             id: id
         },
@@ -205,6 +204,23 @@ exports.userAuthRouter.get("/submission/:id", userMiddleware_1.userMiddleware, (
             testCases: true
         }
     });
+    const testCasesPassed = submission === null || submission === void 0 ? void 0 : submission.testCases.filter((testCase) => testCase.status_id === 3);
+    const testCasesPending = submission === null || submission === void 0 ? void 0 : submission.testCases.filter((testCase) => {
+        return testCase.status_id === 2 || testCase.status_id === 1;
+    });
+    if ((testCasesPending === null || testCasesPending === void 0 ? void 0 : testCasesPending.length) === 0) {
+        submission = yield prisma.submission.update({
+            where: {
+                id: id
+            },
+            data: {
+                status: (testCasesPassed === null || testCasesPassed === void 0 ? void 0 : testCasesPassed.length) === (submission === null || submission === void 0 ? void 0 : submission.testCases.length) ? "ACCEPTED" : "REJECTED"
+            },
+            include: {
+                testCases: true
+            }
+        });
+    }
     if (!submission) {
         return res.json(404).json({
             message: "Submission not found"
