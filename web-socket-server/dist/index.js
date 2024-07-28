@@ -1,18 +1,18 @@
-import http from "http";
-import { WebSocket, WebSocketServer } from "ws";
-import { v4 as uuidv4 } from 'uuid';
-import express from "express";
-import { UserManager } from "./UserManager";
-
-
-const app = express();
-const server = http.createServer(app);
-const wss = new WebSocketServer({ server });
-
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const http_1 = __importDefault(require("http"));
+const ws_1 = require("ws");
+const express_1 = __importDefault(require("express"));
+const UserManager_1 = require("./UserManager");
+const app = (0, express_1.default)();
+const server = http_1.default.createServer(app);
+const wss = new ws_1.WebSocketServer({ server });
 wss.on('connection', (ws) => {
-  UserManager.getInstance().addUser(ws);
-})
-
+    UserManager_1.UserManager.getInstance().addUser(ws);
+});
 // interface User{
 //     ws: WebSocket;
 //     id: string;
@@ -24,12 +24,10 @@ wss.on('connection', (ws) => {
 //     users: User[];
 //     password: string;
 //   }
-  
 //   const rooms: {[key: string]: Room} = {};
 //   wss.on('connection', (ws) => {
 //     ws.on('message', (message) => {
 //       const data = JSON.parse(message.toString());
-  
 //       switch(data.type){
 //         case 'join': {
 //           const { roomId, password } = data;
@@ -86,11 +84,6 @@ wss.on('connection', (ws) => {
 //         }
 //       }
 //     })
-  
-    
-  
-  
-  server.listen(3001,() => {
+server.listen(3001, () => {
     console.log('Server is running on port 3001');
-  })
-  
+});

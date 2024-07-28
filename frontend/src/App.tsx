@@ -34,10 +34,7 @@ function App() {
             <Route path="/signup" element={<Signin isSignIn={false} />} />
             <Route path="/problems" element={<Problems />} />
             {/* <Route path="/compete" element={<Problems />} /> */}
-            <Route
-              path="/compete/:roomId/:password"
-              element={<WarRoomWrapper />}
-            />
+            <Route path="/compete/:roomId" element={<WarRoomWrapper />} />
             <Route path="/rooms" element={<CreateRoomWrapper />} />
             <Route path="/admin/post" element={<AdminPanel />} />
           </Routes>
@@ -50,8 +47,8 @@ function App() {
 
 const CreateRoomWrapper = () => {
   const navigate = useNavigate();
-  const handleJoin = (roomId: string, password: string) => {
-    navigate(`/compete/${roomId}/${password}`);
+  const handleJoin = (roomId: string) => {
+    navigate(`/compete/${roomId}`);
   };
 
   return <CreateRoom onJoin={handleJoin} />;
@@ -59,9 +56,9 @@ const CreateRoomWrapper = () => {
 
 const WarRoomWrapper = () => {
   const params = useParams();
-  const { roomId, password } = params;
-  if (roomId && password) {
-    return <WarRoom room={roomId} password={password} />;
+  const { roomId } = params;
+  if (roomId) {
+    return <WarRoom room={roomId} />;
   }
 };
 

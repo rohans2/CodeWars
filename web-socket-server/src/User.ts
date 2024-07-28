@@ -43,19 +43,19 @@ export class User{
         
             switch(data.type){
               case 'join': {
-                const { roomId, password } = data;
+                const { roomId } = data;
                 if(!RoomManager.getInstance().getRoom(roomId)){ 
                   this.emit({type: 'error', message: 'Room does not exist'});
                   return;
                 }
-                if(RoomManager.getInstance().getRoom(roomId)!.users?.length >= 2){
+                else if(RoomManager.getInstance().getRoom(roomId)!.users?.length >= 2){
                   this.emit({type: 'error', message: 'Room is full'});
                   return;
                 }
-                if(RoomManager.getInstance().getRoom(roomId)!.password && password !== RoomManager.getInstance().getRoom(roomId)!.password){
-                  this.emit({type: 'error', message: 'Incorrect password'});
-                  return;
-                }
+                // if(RoomManager.getInstance().getRoom(roomId)!.password && password !== RoomManager.getInstance().getRoom(roomId)!.password){
+                //   this.emit({type: 'error', message: 'Incorrect password'});
+                //   return;
+                // }
                 this.joinRoom(roomId);
                 
                 if(RoomManager.getInstance().getRoom(roomId)!.users.length === 2){
@@ -65,10 +65,16 @@ export class User{
                 }
                 break;
               }
+              case 'start': {
+                const { message } = data;
+                console.log(message);
+                break;
+              }
               case 'create': {
-                const {password} = data;
+                //const {password} = data;
                 const roomId = uuidv4();
-                RoomManager.getInstance().createRoom({ id: roomId, name: data.name, users: [], password });
+                RoomManager.getInstance().createRoom({ id: roomId, name: data.name, users: [] });
+                this.joinRoom(roomId);
                 this.emit({type: 'created', roomId});
                 break;
               }
@@ -84,7 +90,7 @@ export class User{
                   const scores = RoomManager.getInstance().getRoom(roomId)!.users.map((user) => {
                     return {id: user.id, score: user.getScore()};
                   });
-                  this.emit({type: 'update', room: roomId, scores});
+                  this.emit({type: 'update', roomId, scores});
                 }
                 break;
               }
@@ -94,6 +100,7 @@ export class User{
                     RoomManager.getInstance().getRoom(roomId)!.users.forEach((user) => {
                     user.ws.send(JSON.stringify({
                       type: 'update',
+                      roomId,
                       scores: data.scores
                     }))
                   })
@@ -103,11 +110,14 @@ export class User{
           })
           this.ws.on('close', () => {
             for(const roomId in RoomManager.getInstance().getRooms()){
-              RoomManager.getInstance().getRoom(roomId)!.users = RoomManager.getInstance().getRoom(roomId)!.users.filter((u) => u.ws !== this.ws)
+              if(RoomManager.getInstance().getRoom(roomId)){
+                RoomManager.getInstance().getRoom(roomId)!.users = RoomManager.getInstance().getRoom(roomId)!.users.filter((u) => u.ws !== this.ws)
               if(RoomManager.getInstance().getRoom(roomId)!.users.length === 0){
                 // delete rooms[roomId];
                 RoomManager.getInstance().removeRoom(roomId);
               }
+              }
+              
             }
           })
         }

@@ -1,78 +1,78 @@
 import { useEffect, useRef, useState } from "react";
 //import { useNavigate } from "react-router-dom";
 
-const sampleRooms = [
-  {
-    id: 1,
-    name: "War Room 1",
-    description: "This is a description of the room",
-    users: ["user1", "user2"],
-    problems: ["problem1", "problem2", "problem3"],
-  },
-  {
-    id: 2,
-    name: "War Room 2",
-    description: "This is a description of the room",
-    users: ["user1", "user2"],
-    problems: ["problem1", "problem2", "problem3"],
-  },
-  {
-    id: 3,
-    name: "War Room 3",
-    description: "This is a description of the room",
-    users: ["user1", "user2"],
-    problems: ["problem1", "problem2", "problem3"],
-  },
-  {
-    id: 4,
-    name: "War Room 4 War room 4",
-    description: "This is a description of the room",
-    users: ["user1", "user2"],
-    problems: ["problem1", "problem2", "problem3"],
-  },
-  {
-    id: 5,
-    name: "War Room 4 War room 4",
-    description: "This is a description of the room",
-    users: ["user1", "user2"],
-    problems: ["problem1", "problem2", "problem3"],
-  },
-  {
-    id: 6,
-    name: "War Room 4 War room 4",
-    description: "This is a description of the room",
-    users: ["user1", "user2"],
-    problems: ["problem1", "problem2", "problem3"],
-  },
-  {
-    id: 7,
-    name: "War Room 4 War room 4",
-    description: "This is a description of the room",
-    users: ["user1", "user2"],
-    problems: ["problem1", "problem2", "problem3"],
-  },
-  {
-    id: 8,
-    name: "War Room 4 War room 4",
-    description: "This is a description of the room",
-    users: ["user1", "user2"],
-    problems: ["problem1", "problem2", "problem3"],
-  },
-];
+// const sampleRooms = [
+//   {
+//     id: 1,
+//     name: "War Room 1",
+//     description: "This is a description of the room",
+//     users: ["user1", "user2"],
+//     problems: ["problem1", "problem2", "problem3"],
+//   },
+//   {
+//     id: 2,
+//     name: "War Room 2",
+//     description: "This is a description of the room",
+//     users: ["user1", "user2"],
+//     problems: ["problem1", "problem2", "problem3"],
+//   },
+//   {
+//     id: 3,
+//     name: "War Room 3",
+//     description: "This is a description of the room",
+//     users: ["user1", "user2"],
+//     problems: ["problem1", "problem2", "problem3"],
+//   },
+//   {
+//     id: 4,
+//     name: "War Room 4 War room 4",
+//     description: "This is a description of the room",
+//     users: ["user1", "user2"],
+//     problems: ["problem1", "problem2", "problem3"],
+//   },
+//   {
+//     id: 5,
+//     name: "War Room 4 War room 4",
+//     description: "This is a description of the room",
+//     users: ["user1", "user2"],
+//     problems: ["problem1", "problem2", "problem3"],
+//   },
+//   {
+//     id: 6,
+//     name: "War Room 4 War room 4",
+//     description: "This is a description of the room",
+//     users: ["user1", "user2"],
+//     problems: ["problem1", "problem2", "problem3"],
+//   },
+//   {
+//     id: 7,
+//     name: "War Room 4 War room 4",
+//     description: "This is a description of the room",
+//     users: ["user1", "user2"],
+//     problems: ["problem1", "problem2", "problem3"],
+//   },
+//   {
+//     id: 8,
+//     name: "War Room 4 War room 4",
+//     description: "This is a description of the room",
+//     users: ["user1", "user2"],
+//     problems: ["problem1", "problem2", "problem3"],
+//   },
+// ];
 export const CreateRoom = ({
   onJoin,
 }: {
-  onJoin: (room: string, password: string) => void;
+  onJoin: (room: string, password?: string) => void;
 }) => {
   const [rooms, setRooms] = useState<string[]>([]);
   //const [roomName, setRoomName] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+  //const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string>("");
   const ws = useRef<WebSocket | null>(null);
   //const navigate = useNavigate();
 
   useEffect(() => {
-    ws.current = new WebSocket("ws://localhost:8080");
+    ws.current = new WebSocket("ws://localhost:3001");
     ws.current.onopen = async () => {
       if (ws.current!.readyState !== ws.current!.OPEN) {
         try {
@@ -93,28 +93,23 @@ export const CreateRoom = ({
       if (data.type === "rooms") {
         setRooms(data.rooms);
       } else if (data.type === "created") {
-        onJoin(data.roomId, password);
+        onJoin(data.roomId);
       }
     };
-  }, [onJoin, password]);
+  }, [onJoin]);
 
   const handleCreateRoom = () => {
-    if (password.length === 0) {
-      setError("Password cannot be empty");
-      return;
-    }
     // const roomName =
     //   prompt("Enter room name") || `room-${Math.floor(Math.random() * 1000)}`;
-    ws.current!.send(JSON.stringify({ type: "create", password }));
-    setPassword("");
-    //setRooms([...rooms, roomName]);
+    ws.current!.send(JSON.stringify({ type: "create" }));
+    // setPassword("");
+    // //setRooms([...rooms, roomName]);
   };
 
   const handleJoinRoom = (room: string) => {
-    const userPassword = prompt("Enter password");
-    if (userPassword) {
-      onJoin(room, userPassword);
-    }
+    // const userPassword = prompt("Enter password");
+    // if (userPassword) {
+    onJoin(room);
   };
   const waitForOpenConnection = (socket: WebSocket) => {
     return new Promise((resolve, reject) => {
@@ -138,12 +133,12 @@ export const CreateRoom = ({
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-65px)]">
       <h1 className="text-6xl font-bold text-gray-800">War Rooms</h1>
-      <input
+      {/* <input
         type="password"
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-      />
+      /> */}
       <button
         type="button"
         onClick={handleCreateRoom}
@@ -153,7 +148,7 @@ export const CreateRoom = ({
       </button>
       {error && <p style={{ color: "red" }}>{error}</p>}
       <div className="flex gap-x-5 gap-y-5 mt-10 flex-wrap">
-        {sampleRooms.map((room) => (
+        {/* {sampleRooms.map((room) => (
           <div key={room.id}>
             <a
               href="#"
@@ -166,7 +161,7 @@ export const CreateRoom = ({
               </h5>
             </a>
           </div>
-        ))}
+        ))} */}
       </div>
       --------------------------------------------------------------
       <div className="flex gap-x-5 gap-y-5 mt-10 flex-wrap">

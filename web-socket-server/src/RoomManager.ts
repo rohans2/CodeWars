@@ -4,7 +4,7 @@ interface Room{
     id: string;
     name?: string;
     users: User[];
-    password: string;
+    password?: string;
 }
 export class RoomManager{
     private static instance: RoomManager;
@@ -23,6 +23,7 @@ export class RoomManager{
     public addUserToRoom(roomId: string, user: User){
         const room = this.getRoom(roomId);
         if(room && room.users.length < 2){
+            user.setScore(0);
             room.users.push(user);
         }else{
             throw new Error('Room does not exist');
@@ -33,10 +34,10 @@ export class RoomManager{
     public removeUserFromRoom(roomId: string, user: User){
         const room = this.getRoom(roomId);
         if(room && room.users.length >= 1){
-            if(room.users.length === 1){
+            room.users = room.users.filter((u: User) => u.getId() !== user.getId())
+            if(room.users.length === 0){
                 this.removeRoom(roomId);
             }
-            room.users = room.users.filter((u: User) => u.getId() !== user.getId())
         }else{
             throw new Error('Room does not exist');
         }

@@ -58,3 +58,7 @@ app.get('/api/v1/me',async(req,res) => {
   }
 })
 
+app.listen(8080,() => {
+    console.log("Server started on port 8080")
+})
+

@@ -29,38 +29,28 @@ const waitForOpenConnection = (socket: WebSocket) => {
     }, intervalTime);
   });
 };
-export const WarRoom = ({
-  room,
-  password,
-}: {
-  room: string;
-  password: string;
-}) => {
+export const WarRoom = ({ room }: { room: string; password?: string }) => {
   const [connected, setConnected] = useState(false);
   const [scores, setScores] = useState<Score[]>([]);
   const [error, setError] = useState<string>("");
   const ws = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    ws.current = new WebSocket("ws://localhost:8080");
+    ws.current = new WebSocket("ws://localhost:3001");
     ws.current.onopen = async () => {
       if (ws.current!.readyState !== ws.current!.OPEN) {
         try {
           await waitForOpenConnection(ws.current!);
           console.log("connected foirst");
           setConnected(true);
-          ws.current!.send(
-            JSON.stringify({ type: "join", roomId: room, password })
-          );
+          ws.current!.send(JSON.stringify({ type: "join", roomId: room }));
         } catch (err) {
           console.error(err);
         }
       } else {
         console.log("connected");
         setConnected(true);
-        ws.current!.send(
-          JSON.stringify({ type: "join", roomId: room, password })
-        );
+        ws.current!.send(JSON.stringify({ type: "join", roomId: room }));
       }
     };
 
@@ -81,7 +71,7 @@ export const WarRoom = ({
     return () => {
       //ws.current?.close();
     };
-  }, [room, password]);
+  }, [room]);
 
   const handleAnswer = () => {
     if (ws.current && connected) {
