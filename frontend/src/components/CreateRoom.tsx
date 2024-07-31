@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { WebSocketManager } from "../utils/WebSocketManager";
 //import { useNavigate } from "react-router-dom";
 
 // const sampleRooms = [
@@ -68,40 +69,54 @@ export const CreateRoom = ({
   //const [roomName, setRoomName] = useState<string>("");
   //const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string>("");
-  const ws = useRef<WebSocket | null>(null);
+
   //const navigate = useNavigate();
 
   useEffect(() => {
-    ws.current = new WebSocket("ws://localhost:3001");
-    ws.current.onopen = async () => {
-      if (ws.current!.readyState !== ws.current!.OPEN) {
-        try {
-          await waitForOpenConnection(ws.current!);
-          console.log("connected foirst");
-          ws.current!.send(JSON.stringify({ type: "list" }));
-        } catch (err) {
-          console.error(err);
-        }
-      } else {
-        console.log("connected");
-        ws.current!.send(JSON.stringify({ type: "list" }));
-      }
-    };
+    // ws.current = new WebSocket("ws://localhost:3001");
+    // ws.current.onopen = async () => {
+    //   if (ws.current!.readyState !== ws.current!.OPEN) {
+    //     try {
+    //       await waitForOpenConnection(ws.current!);
+    //       console.log("connected foirst");
+    //       ws.current!.send(JSON.stringify({ type: "list" }));
+    //     } catch (err) {
+    //       console.error(err);
+    //     }
+    //   } else {
+    //     console.log("connected");
+    //     ws.current!.send(JSON.stringify({ type: "list" }));
+    //   }
+    // };
 
-    ws.current.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === "rooms") {
-        setRooms(data.rooms);
-      } else if (data.type === "created") {
-        onJoin(data.roomId);
-      }
+    // ws.current.onmessage = (event) => {
+    //   const data = JSON.parse(event.data);
+    //   if (data.type === "rooms") {
+    //     setRooms(data.rooms);
+    //   } else if (data.type === "created") {
+    //     onJoin(data.roomId);
+    //   }
+    // };
+
+    const instance = WebSocketManager.getInstance();
+    instance.registerCallback("rooms", (data) => {
+      setRooms(data.rooms);
+    });
+    instance.registerCallback("created", (data) => {
+      onJoin(data.roomId);
+    });
+
+    return () => {
+      instance.unregisterCallback("rooms");
+      instance.unregisterCallback("created");
+      instance.close();
     };
   }, [onJoin]);
 
   const handleCreateRoom = () => {
     // const roomName =
     //   prompt("Enter room name") || `room-${Math.floor(Math.random() * 1000)}`;
-    ws.current!.send(JSON.stringify({ type: "create" }));
+    WebSocketManager.getInstance().sendMessage({ type: "create" });
     // setPassword("");
     // //setRooms([...rooms, roomName]);
   };
@@ -111,24 +126,24 @@ export const CreateRoom = ({
     // if (userPassword) {
     onJoin(room);
   };
-  const waitForOpenConnection = (socket: WebSocket) => {
-    return new Promise((resolve, reject) => {
-      const maxNumberOfAttempts = 10;
-      const intervalTime = 200; //ms
+  // const waitForOpenConnection = (socket: WebSocket) => {
+  //   return new Promise((resolve, reject) => {
+  //     const maxNumberOfAttempts = 10;
+  //     const intervalTime = 200; //ms
 
-      let currentAttempt = 0;
-      const interval = setInterval(() => {
-        if (currentAttempt > maxNumberOfAttempts - 1) {
-          clearInterval(interval);
-          reject(new Error("Maximum number of attempts exceeded"));
-        } else if (socket.readyState === socket.OPEN) {
-          clearInterval(interval);
-          resolve(true);
-        }
-        currentAttempt++;
-      }, intervalTime);
-    });
-  };
+  //     let currentAttempt = 0;
+  //     const interval = setInterval(() => {
+  //       if (currentAttempt > maxNumberOfAttempts - 1) {
+  //         clearInterval(interval);
+  //         reject(new Error("Maximum number of attempts exceeded"));
+  //       } else if (socket.readyState === socket.OPEN) {
+  //         clearInterval(interval);
+  //         resolve(true);
+  //       }
+  //       currentAttempt++;
+  //     }, intervalTime);
+  //   });
+  // };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-65px)]">

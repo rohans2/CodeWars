@@ -5,136 +5,112 @@ import remarkGfm from "remark-gfm";
 import { Sidebar } from "./Sidebar";
 import { LanguageSelector } from "./LanguageSelector";
 import { useEffect, useRef, useState } from "react";
+import { WebSocketManager } from "../utils/WebSocketManager";
+import { Problem } from "../utils/types";
+import axios from "axios";
+import { ProblemComponent } from "./Problem";
+import { LANGUAGE_MAPPING } from "../utils/constants";
+import { ProblemSubmitBar } from "./ProblemSubmitBar";
 
 interface Score {
   score: number;
   userId: string;
 }
 
-const waitForOpenConnection = (socket: WebSocket) => {
-  return new Promise((resolve, reject) => {
-    const maxNumberOfAttempts = 10;
-    const intervalTime = 200; //ms
-
-    let currentAttempt = 0;
-    const interval = setInterval(() => {
-      if (currentAttempt > maxNumberOfAttempts - 1) {
-        clearInterval(interval);
-        reject(new Error("Maximum number of attempts exceeded"));
-      } else if (socket.readyState === socket.OPEN) {
-        clearInterval(interval);
-        resolve(true);
-      }
-      currentAttempt++;
-    }, intervalTime);
-  });
-};
 export const WarRoom = ({ room }: { room: string; password?: string }) => {
   const [connected, setConnected] = useState(false);
   const [scores, setScores] = useState<Score[]>([]);
   const [error, setError] = useState<string>("");
-  const ws = useRef<WebSocket | null>(null);
+  const [code, setCode] = useState<Record<string, string>>({});
+  const [language, setLanguage] = useState("cpp");
+  const [problem, setProblem] = useState<Problem | null>(null);
 
   useEffect(() => {
-    ws.current = new WebSocket("ws://localhost:3001");
-    ws.current.onopen = async () => {
-      if (ws.current!.readyState !== ws.current!.OPEN) {
-        try {
-          await waitForOpenConnection(ws.current!);
-          console.log("connected foirst");
-          setConnected(true);
-          ws.current!.send(JSON.stringify({ type: "join", roomId: room }));
-        } catch (err) {
-          console.error(err);
+    setConnected(true);
+    WebSocketManager.getInstance().sendMessage({ type: "join", roomId: room });
+
+    // ws.current.onmessage = (event) => {
+    //   const data = JSON.parse(event.data);
+    //   if (data.type === "update") {
+    //     setScores(data.scores);
+    //   } else if (data.type === "error") {
+    //     setError(data.message);
+    //     ws.current!.close();
+    //   }
+    // };
+
+    WebSocketManager.getInstance().registerCallback("update", (data) => {
+      setScores(data.scores);
+    });
+    WebSocketManager.getInstance().registerCallback("error", (data) => {
+      setError(data.message);
+      WebSocketManager.getInstance().close();
+    });
+    //Create a backend route for fetching random problems according to the difficulty
+    axios
+      .get(
+        `http://localhost:8080/api/v1/${user.role.toLowerCase()}/problem/${slug}`,
+        {
+          withCredentials: true,
         }
-      } else {
-        console.log("connected");
-        setConnected(true);
-        ws.current!.send(JSON.stringify({ type: "join", roomId: room }));
-      }
-    };
-
-    ws.current.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === "update") {
-        setScores(data.scores);
-      } else if (data.type === "error") {
-        setError(data.message);
-        ws.current!.close();
-      }
-    };
-
-    ws.current.onclose = () => {
-      setConnected(false);
-    };
-
+      )
+      .then((res) => {
+        if (res.status !== 200) {
+          setProblem(null);
+          return;
+        }
+        console.log(res.data);
+        setProblem(res.data.problem);
+      });
     return () => {
-      //ws.current?.close();
+      WebSocketManager.getInstance().close();
+      WebSocketManager.getInstance().unregisterCallback("update");
+      WebSocketManager.getInstance().unregisterCallback("error");
     };
   }, [room]);
 
   const handleAnswer = () => {
-    if (ws.current && connected) {
-      ws.current.send(JSON.stringify({ type: "answer", roomId: room }));
-    }
+    WebSocketManager.getInstance().sendMessage({
+      type: "answer",
+      roomId: room,
+    });
   };
 
-  const problem = {
-    slug: "sample-problem",
-    title: "Sample Problem Sample",
-    description: `## Classroom
-    
-          Sample
-    
-          For example
-    
-    
-        Input
-    
-    \`\`\`
-    [1, 2, 3, 4, 5]
-    \`\`\`
-    
-    Output
-    \`\`\`
-    9
-    \`\`\`
-    
-    \`\`\`
-    [2, 3, 4, 5, 1, 100]
-    \`\`\`
-    
-    Output
-    \`\`\`
-    105
-    \`\`\``,
-    difficulty: "EASY",
-  };
-  console.log("connected", connected);
-  console.log("room", room);
+  if (!problem) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <>
       <Sidebar room={room} connected={connected} scores={scores} />
-      <div className="grid grid-cols-2 gap-x-3 flex-1 max-h-[calc(100%-90px)]">
-        <div className="ml-5 mt-6 p-6 min-w-1/2 ">
-          <Markdown remarkPlugins={[remarkGfm]}>{problem.description}</Markdown>
+      <div className="grid grid-cols-2 gap-x-5 h-[90vh]">
+        <div className="ml-5 mt-6  p-6 min-w-1/2 overflow-auto">
+          <ProblemComponent problem={problem} />
         </div>
-        <div className="flex flex-col gap-y-2 p-5">
-          <LanguageSelector />
+        <div className="flex flex-col gap-y-2 p-5 h-[85vh]">
+          <LanguageSelector language={language} setLanguage={setLanguage} />
           <Editor
-            defaultLanguage="Java"
+            defaultLanguage="cpp"
             defaultValue="// Your code here"
             theme="vs-dark"
             height={"90%"}
+            value={code[language]}
+            options={{
+              fontSize: 14,
+            }}
+            language={LANGUAGE_MAPPING[language]?.monaco}
+            onChange={(value) => {
+              setCode({ ...code, [language]: value } as Record<string, string>);
+            }}
             className="max-w-1/2"
           />
-          <button
-            type="button"
-            onClick={handleAnswer}
-            className="md:w-1/3 lg:w-1/4 text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none  focus:ring-blue-800 shadow-lg shadow-blue-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 mt-4"
-          >
-            Submit
-          </button>
+
+          <ProblemSubmitBar
+            code={code[language]}
+            languageId={LANGUAGE_MAPPING[language]?.judge0}
+            problemId={problem.id}
+            slug={problem.slug}
+          />
         </div>
       </div>
     </>
