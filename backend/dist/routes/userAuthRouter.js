@@ -236,3 +236,21 @@ exports.userAuthRouter.get("/problems", userMiddleware_1.userMiddleware, (req, r
         problems
     });
 }));
+exports.userAuthRouter.get("/:difficulty/random-problem", userMiddleware_1.userMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const problemCount = yield prisma.problem.count();
+    const skip = Math.floor(Math.random() * problemCount);
+    const difficulty = req.params.difficulty;
+    const problem = yield prisma.problem.findFirst({
+        take: 1,
+        skip: skip,
+        where: {
+            difficulty: difficulty
+        },
+        orderBy: {
+            id: "asc"
+        }
+    });
+    return res.json({
+        problem
+    });
+}));

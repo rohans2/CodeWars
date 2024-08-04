@@ -2,6 +2,7 @@ import {WebSocket} from "ws";
 import { v4 as uuidv4 } from 'uuid';
 
 import { RoomManager } from "./RoomManager";
+import { UserManager } from "./UserManager";
 
 export class User{
     private id: string;
@@ -44,11 +45,13 @@ export class User{
             switch(data.type){
               case 'join': {
                 const { roomId } = data;
+                console.log('join called websocket');
                 if(!RoomManager.getInstance().getRoom(roomId)){ 
                   this.emit({type: 'error', message: 'Room does not exist'});
                   return;
                 }
                 else if(RoomManager.getInstance().getRoom(roomId)!.users?.length >= 2){
+                  console.log('Room is full');
                   this.emit({type: 'error', message: 'Room is full'});
                   return;
                 }
@@ -70,12 +73,14 @@ export class User{
                 console.log(message);
                 break;
               }
+             
               case 'create': {
                 //const {password} = data;
                 const roomId = uuidv4();
-                RoomManager.getInstance().createRoom({ id: roomId, name: data.name, users: [] });
+                const room = RoomManager.getInstance().createRoom({ id: roomId, name: data.name, users: [] });
                 this.joinRoom(roomId);
-                this.emit({type: 'created', roomId});
+                this.emit({type: 'created', room});
+                UserManager.getInstance().emitToAll({type: 'rooms', rooms: RoomManager.getInstance().getRooms()});                
                 break;
               }
               case 'list': {

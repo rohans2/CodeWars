@@ -39,4 +39,10 @@ export class UserManager{
     private getId(){
         return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     }
+
+    public emitToAll(data: any){
+        for(const user of this.users.values()){
+            user.emit(data);
+        }
+    }
 }

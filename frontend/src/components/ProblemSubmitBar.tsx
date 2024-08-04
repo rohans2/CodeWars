@@ -14,70 +14,17 @@ export const ProblemSubmitBar = ({
   languageId,
   slug,
   problemId,
+  problemStatus,
+  setProblemStatus,
 }: {
   code: string;
   languageId: number;
   slug: string;
   problemId: string;
+  problemStatus?: string;
+  setProblemStatus?: (status: string) => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-
-  const sampleTestCases = [
-    {
-      id: "1",
-      input: "1",
-      output: "1",
-      status_id: 1,
-    },
-    {
-      id: "2",
-      input: "2",
-      output: "2",
-      status_id: 2,
-    },
-    {
-      id: "3",
-      input: "3",
-      output: "3",
-      status_id: 3,
-    },
-    {
-      id: "4",
-      input: "4",
-      output: "4",
-      status_id: 4,
-    },
-    {
-      id: "5",
-      input: "5",
-      output: "5",
-      status_id: 5,
-    },
-    {
-      id: "6",
-      input: "6",
-      output: "6",
-      status_id: 6,
-    },
-    {
-      id: "7",
-      input: "7",
-      output: "7",
-      status_id: 13,
-    },
-    {
-      id: "8",
-      input: "8",
-      output: "8",
-      status_id: 14,
-    },
-    {
-      id: "9",
-      input: "9",
-      output: "9",
-      status_id: 16,
-    },
-  ];
 
   const toggle = () => {
     setIsOpen(!isOpen);
@@ -85,7 +32,7 @@ export const ProblemSubmitBar = ({
 
   const [status, setStatus] = useState<string>(SubmitStatus.SUBMIT);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [testCases, setTestCases] = useState<any[]>(sampleTestCases);
+  const [testCases, setTestCases] = useState<any[]>([]);
 
   const poll = async (id: string, retries: number) => {
     if (retries === 0) {

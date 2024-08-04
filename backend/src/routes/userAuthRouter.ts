@@ -263,3 +263,23 @@ userAuthRouter.get("/problems", userMiddleware, async (req,res) => {
         })
 })
 
+userAuthRouter.get("/:difficulty/random-problem", userMiddleware, async(req, res) => {
+    const problemCount = await prisma.problem.count();
+    const skip = Math.floor(Math.random() * problemCount);
+   
+    const difficulty = req.params.difficulty;
+    
+    const problem = await prisma.problem.findFirst({
+        take: 1,
+        skip: skip, 
+        where: {
+            difficulty: difficulty as "EASY" | "MEDIUM" | "HARD"
+        },
+        orderBy: {
+            id: "asc"
+        }
+    })
+    return res.json({
+        problem
+    })
+})

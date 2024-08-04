@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
 const uuid_1 = require("uuid");
 const RoomManager_1 = require("./RoomManager");
+const UserManager_1 = require("./UserManager");
 class User {
     constructor(id, ws) {
         this.id = id;
@@ -34,19 +35,21 @@ class User {
             const data = JSON.parse(message);
             switch (data.type) {
                 case 'join': {
-                    const { roomId, password } = data;
+                    const { roomId } = data;
+                    console.log('join called websocket');
                     if (!RoomManager_1.RoomManager.getInstance().getRoom(roomId)) {
                         this.emit({ type: 'error', message: 'Room does not exist' });
                         return;
                     }
-                    if (((_a = RoomManager_1.RoomManager.getInstance().getRoom(roomId).users) === null || _a === void 0 ? void 0 : _a.length) >= 2) {
+                    else if (((_a = RoomManager_1.RoomManager.getInstance().getRoom(roomId).users) === null || _a === void 0 ? void 0 : _a.length) >= 2) {
+                        console.log('Room is full');
                         this.emit({ type: 'error', message: 'Room is full' });
                         return;
                     }
-                    if (RoomManager_1.RoomManager.getInstance().getRoom(roomId).password && password !== RoomManager_1.RoomManager.getInstance().getRoom(roomId).password) {
-                        this.emit({ type: 'error', message: 'Incorrect password' });
-                        return;
-                    }
+                    // if(RoomManager.getInstance().getRoom(roomId)!.password && password !== RoomManager.getInstance().getRoom(roomId)!.password){
+                    //   this.emit({type: 'error', message: 'Incorrect password'});
+                    //   return;
+                    // }
                     this.joinRoom(roomId);
                     if (RoomManager_1.RoomManager.getInstance().getRoom(roomId).users.length === 2) {
                         RoomManager_1.RoomManager.getInstance().getRoom(roomId).users.forEach((user) => {
@@ -55,11 +58,18 @@ class User {
                     }
                     break;
                 }
+                case 'start': {
+                    const { message } = data;
+                    console.log(message);
+                    break;
+                }
                 case 'create': {
-                    const { password } = data;
+                    //const {password} = data;
                     const roomId = (0, uuid_1.v4)();
-                    RoomManager_1.RoomManager.getInstance().createRoom({ id: roomId, name: data.name, users: [], password });
-                    this.emit({ type: 'created', roomId });
+                    const room = RoomManager_1.RoomManager.getInstance().createRoom({ id: roomId, name: data.name, users: [] });
+                    this.joinRoom(roomId);
+                    this.emit({ type: 'created', room });
+                    UserManager_1.UserManager.getInstance().emitToAll({ type: 'rooms', rooms: RoomManager_1.RoomManager.getInstance().getRooms() });
                     break;
                 }
                 case 'list': {
@@ -74,7 +84,7 @@ class User {
                         const scores = RoomManager_1.RoomManager.getInstance().getRoom(roomId).users.map((user) => {
                             return { id: user.id, score: user.getScore() };
                         });
-                        this.emit({ type: 'update', room: roomId, scores });
+                        this.emit({ type: 'update', roomId, scores });
                     }
                     break;
                 }
@@ -84,6 +94,7 @@ class User {
                         RoomManager_1.RoomManager.getInstance().getRoom(roomId).users.forEach((user) => {
                             user.ws.send(JSON.stringify({
                                 type: 'update',
+                                roomId,
                                 scores: data.scores
                             }));
                         });
@@ -93,7 +104,7 @@ class User {
         });
         this.ws.on('close', () => {
             for (const roomId in RoomManager_1.RoomManager.getInstance().getRooms()) {
-                if (RoomManager_1.RoomManager.getInstance().getRoom(roomId).users) {
+                if (RoomManager_1.RoomManager.getInstance().getRoom(roomId)) {
                     RoomManager_1.RoomManager.getInstance().getRoom(roomId).users = RoomManager_1.RoomManager.getInstance().getRoom(roomId).users.filter((u) => u.ws !== this.ws);
                     if (RoomManager_1.RoomManager.getInstance().getRoom(roomId).users.length === 0) {
                         // delete rooms[roomId];

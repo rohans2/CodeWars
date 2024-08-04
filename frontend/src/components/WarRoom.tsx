@@ -1,12 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Editor } from "@monaco-editor/react";
-import Markdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { Sidebar } from "./Sidebar";
 import { LanguageSelector } from "./LanguageSelector";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { WebSocketManager } from "../utils/WebSocketManager";
-import { Problem } from "../utils/types";
+import { errorType, Problem, updateType } from "../utils/types";
 import axios from "axios";
 import { ProblemComponent } from "./Problem";
 import { LANGUAGE_MAPPING } from "../utils/constants";
@@ -24,48 +22,45 @@ export const WarRoom = ({ room }: { room: string; password?: string }) => {
   const [code, setCode] = useState<Record<string, string>>({});
   const [language, setLanguage] = useState("cpp");
   const [problem, setProblem] = useState<Problem | null>(null);
+  const [problemStatus, setProblemStatus] = useState<string>("");
 
   useEffect(() => {
     setConnected(true);
-    WebSocketManager.getInstance().sendMessage({ type: "join", roomId: room });
+    //WebSocketManager.getInstance().sendMessage({ type: "join", roomId: room });
 
-    // ws.current.onmessage = (event) => {
-    //   const data = JSON.parse(event.data);
-    //   if (data.type === "update") {
-    //     setScores(data.scores);
-    //   } else if (data.type === "error") {
-    //     setError(data.message);
-    //     ws.current!.close();
-    //   }
-    // };
+    WebSocketManager.getInstance().registerCallback(
+      "update",
+      (data: updateType) => {
+        setScores(data.scores);
+      }
+    );
+    WebSocketManager.getInstance().registerCallback(
+      "error",
+      (data: errorType) => {
+        setError(data.message);
+        console.log("error");
+        //WebSocketManager.getInstance().close();
+      }
+    );
 
-    WebSocketManager.getInstance().registerCallback("update", (data) => {
-      setScores(data.scores);
-    });
-    WebSocketManager.getInstance().registerCallback("error", (data) => {
-      setError(data.message);
-      WebSocketManager.getInstance().close();
-    });
-    //Create a backend route for fetching random problems according to the difficulty
     axios
-      .get(
-        `http://localhost:8080/api/v1/${user.role.toLowerCase()}/problem/${slug}`,
-        {
-          withCredentials: true,
-        }
-      )
+      .get(`http://localhost:8080/api/v1/user/${"HARD"}/random-problem`, {
+        withCredentials: true,
+      })
       .then((res) => {
         if (res.status !== 200) {
           setProblem(null);
           return;
         }
-        console.log(res.data);
+
         setProblem(res.data.problem);
       });
     return () => {
-      WebSocketManager.getInstance().close();
-      WebSocketManager.getInstance().unregisterCallback("update");
-      WebSocketManager.getInstance().unregisterCallback("error");
+      // if (WebSocketManager.getInstance().isConnected()) {
+      //   WebSocketManager.getInstance().close();
+      //   WebSocketManager.getInstance().unregisterCallback("update");
+      //   WebSocketManager.getInstance().unregisterCallback("error");
+      // }
     };
   }, [room]);
 
@@ -110,6 +105,8 @@ export const WarRoom = ({ room }: { room: string; password?: string }) => {
             languageId={LANGUAGE_MAPPING[language]?.judge0}
             problemId={problem.id}
             slug={problem.slug}
+            problemStatus={problemStatus}
+            setProblemStatus={setProblemStatus}
           />
         </div>
       </div>

@@ -1,159 +1,62 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { WebSocketManager } from "../utils/WebSocketManager";
-//import { useNavigate } from "react-router-dom";
+import { Room } from "../utils/types";
 
-// const sampleRooms = [
-//   {
-//     id: 1,
-//     name: "War Room 1",
-//     description: "This is a description of the room",
-//     users: ["user1", "user2"],
-//     problems: ["problem1", "problem2", "problem3"],
-//   },
-//   {
-//     id: 2,
-//     name: "War Room 2",
-//     description: "This is a description of the room",
-//     users: ["user1", "user2"],
-//     problems: ["problem1", "problem2", "problem3"],
-//   },
-//   {
-//     id: 3,
-//     name: "War Room 3",
-//     description: "This is a description of the room",
-//     users: ["user1", "user2"],
-//     problems: ["problem1", "problem2", "problem3"],
-//   },
-//   {
-//     id: 4,
-//     name: "War Room 4 War room 4",
-//     description: "This is a description of the room",
-//     users: ["user1", "user2"],
-//     problems: ["problem1", "problem2", "problem3"],
-//   },
-//   {
-//     id: 5,
-//     name: "War Room 4 War room 4",
-//     description: "This is a description of the room",
-//     users: ["user1", "user2"],
-//     problems: ["problem1", "problem2", "problem3"],
-//   },
-//   {
-//     id: 6,
-//     name: "War Room 4 War room 4",
-//     description: "This is a description of the room",
-//     users: ["user1", "user2"],
-//     problems: ["problem1", "problem2", "problem3"],
-//   },
-//   {
-//     id: 7,
-//     name: "War Room 4 War room 4",
-//     description: "This is a description of the room",
-//     users: ["user1", "user2"],
-//     problems: ["problem1", "problem2", "problem3"],
-//   },
-//   {
-//     id: 8,
-//     name: "War Room 4 War room 4",
-//     description: "This is a description of the room",
-//     users: ["user1", "user2"],
-//     problems: ["problem1", "problem2", "problem3"],
-//   },
-// ];
-export const CreateRoom = ({
-  onJoin,
-}: {
-  onJoin: (room: string, password?: string) => void;
-}) => {
-  const [rooms, setRooms] = useState<string[]>([]);
+export const CreateRoom = ({ onJoin }: { onJoin: (room: Room) => void }) => {
+  const [rooms, setRooms] = useState<Room[]>([]);
   //const [roomName, setRoomName] = useState<string>("");
   //const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string>("");
 
-  //const navigate = useNavigate();
-
   useEffect(() => {
-    // ws.current = new WebSocket("ws://localhost:3001");
-    // ws.current.onopen = async () => {
-    //   if (ws.current!.readyState !== ws.current!.OPEN) {
-    //     try {
-    //       await waitForOpenConnection(ws.current!);
-    //       console.log("connected foirst");
-    //       ws.current!.send(JSON.stringify({ type: "list" }));
-    //     } catch (err) {
-    //       console.error(err);
-    //     }
-    //   } else {
-    //     console.log("connected");
-    //     ws.current!.send(JSON.stringify({ type: "list" }));
-    //   }
-    // };
-
-    // ws.current.onmessage = (event) => {
-    //   const data = JSON.parse(event.data);
-    //   if (data.type === "rooms") {
-    //     setRooms(data.rooms);
-    //   } else if (data.type === "created") {
-    //     onJoin(data.roomId);
-    //   }
-    // };
-
     const instance = WebSocketManager.getInstance();
+    instance.registerCallback("error", (data) => {
+      setError(data.message);
+      console.log("error");
+    });
     instance.registerCallback("rooms", (data) => {
       setRooms(data.rooms);
     });
     instance.registerCallback("created", (data) => {
-      onJoin(data.roomId);
+      setRooms([...rooms, data.room]);
+      onJoin(data.room);
     });
 
     return () => {
-      instance.unregisterCallback("rooms");
-      instance.unregisterCallback("created");
-      instance.close();
+      // if (instance.isConnected()) {
+      //   // <-- This is important
+      //   instance.unregisterCallback("rooms");
+      //   instance.unregisterCallback("created");
+      //   instance.close();
+      // }
     };
-  }, [onJoin]);
+  }, [onJoin, rooms]);
 
   const handleCreateRoom = () => {
-    // const roomName =
-    //   prompt("Enter room name") || `room-${Math.floor(Math.random() * 1000)}`;
     WebSocketManager.getInstance().sendMessage({ type: "create" });
-    // setPassword("");
-    // //setRooms([...rooms, roomName]);
   };
 
-  const handleJoinRoom = (room: string) => {
+  const handleJoinRoom = async (room: Room) => {
     // const userPassword = prompt("Enter password");
     // if (userPassword) {
-    onJoin(room);
+    console.log("join called");
+    //add await to make sure the message is processed before onJoin is called
+    WebSocketManager.getInstance().sendMessage({
+      type: "join",
+      roomId: room.id,
+    });
+    await new Promise((res) => setTimeout(res, 1000));
+    console.log("error:", error);
+    if (error === "" && room.users.length <= 2) {
+      console.log("join called inside");
+      onJoin(room);
+    }
   };
-  // const waitForOpenConnection = (socket: WebSocket) => {
-  //   return new Promise((resolve, reject) => {
-  //     const maxNumberOfAttempts = 10;
-  //     const intervalTime = 200; //ms
-
-  //     let currentAttempt = 0;
-  //     const interval = setInterval(() => {
-  //       if (currentAttempt > maxNumberOfAttempts - 1) {
-  //         clearInterval(interval);
-  //         reject(new Error("Maximum number of attempts exceeded"));
-  //       } else if (socket.readyState === socket.OPEN) {
-  //         clearInterval(interval);
-  //         resolve(true);
-  //       }
-  //       currentAttempt++;
-  //     }, intervalTime);
-  //   });
-  // };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-65px)]">
       <h1 className="text-6xl font-bold text-gray-800">War Rooms</h1>
-      {/* <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      /> */}
+
       <button
         type="button"
         onClick={handleCreateRoom}
@@ -162,30 +65,13 @@ export const CreateRoom = ({
         Create new room{" "}
       </button>
       {error && <p style={{ color: "red" }}>{error}</p>}
+
       <div className="flex gap-x-5 gap-y-5 mt-10 flex-wrap">
-        {/* {sampleRooms.map((room) => (
-          <div key={room.id}>
-            <a
-              href="#"
-              className="block min-w-[200px] p-5 m-2  border   rounded-lg drop-shadow-md  bg-gray-800 border-gray-700 hover:bg-gray-700"
-            >
-              <h5 className="text-center text-xl text-wrap font-bold tracking-tight text-white">
-                {room.name.length > 13
-                  ? room.name.slice(0, 13) + "..."
-                  : room.name}
-              </h5>
-            </a>
-          </div>
-        ))} */}
-      </div>
-      --------------------------------------------------------------
-      <div className="flex gap-x-5 gap-y-5 mt-10 flex-wrap">
-        {rooms.map((room) => (
+        {rooms?.map((room) => (
           <div
-            key={room}
+            key={room.id}
             onClick={() => {
               handleJoinRoom(room);
-              //navigate(`/compete/${room.replace(/\s/g, "")}`);
             }}
           >
             <a
@@ -193,7 +79,11 @@ export const CreateRoom = ({
               className="block min-w-[200px] p-5 m-2  border   rounded-lg drop-shadow-md  bg-gray-800 border-gray-700 hover:bg-gray-700"
             >
               <h5 className="text-center text-xl text-wrap font-bold tracking-tight text-white">
-                {room.length > 13 ? room.slice(0, 13) + "..." : room}
+                {room.name
+                  ? room.name.length > 13
+                    ? room.name?.slice(0, 13) + "..."
+                    : room.name
+                  : "New Room: " + room.id.slice(0, 5)}
               </h5>
             </a>
           </div>

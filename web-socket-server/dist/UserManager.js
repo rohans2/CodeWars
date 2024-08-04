@@ -32,5 +32,10 @@ class UserManager {
     getId() {
         return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     }
+    emitToAll(data) {
+        for (const user of this.users.values()) {
+            user.emit(data);
+        }
+    }
 }
 exports.UserManager = UserManager;

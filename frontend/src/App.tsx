@@ -13,6 +13,7 @@ import { WarRoom } from "./components/WarRoom";
 import { CreateRoom } from "./components/CreateRoom";
 import { AdminPanel } from "./components/AdminPanel";
 import { RecoilRoot } from "recoil";
+import { Room } from "./utils/types";
 
 //import { useState } from "react";
 
@@ -47,8 +48,8 @@ function App() {
 
 const CreateRoomWrapper = () => {
   const navigate = useNavigate();
-  const handleJoin = (roomId: string) => {
-    navigate(`/compete/${roomId}`);
+  const handleJoin = (room: Room) => {
+    navigate(`/compete/${room.id}`);
   };
 
   return <CreateRoom onJoin={handleJoin} />;

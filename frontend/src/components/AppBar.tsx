@@ -34,7 +34,12 @@ export const AppBar = () => {
         <a className="transition hover:text-primary-600 cursor-pointer ">
           <p>Practice</p>
         </a>
-        <a className="transition hover:text-primary-600 cursor-pointer ">
+        <a
+          onClick={() => {
+            navigate("/rooms");
+          }}
+          className="transition hover:text-primary-600 cursor-pointer "
+        >
           <p>Compete</p>
         </a>
       </div>

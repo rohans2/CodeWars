@@ -19,3 +19,24 @@ export type User = {
   name?:string;
   role: "USER" | "ADMIN";
 }
+interface Score {
+  score: number;
+  userId: string;
+}
+
+export type updateType = {
+  type: "update";
+  scores: Score[];
+}
+
+export type errorType = {
+  type: "error";
+  message: string;
+}
+
+export interface Room{
+  id: string;
+  name?: string
+  users: User[];
+  password?: string;
+}

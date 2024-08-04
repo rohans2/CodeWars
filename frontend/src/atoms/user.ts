@@ -8,7 +8,9 @@ export const userAtom = atom<User | null>({
         key: "userSelector",
         get: async () => {
             try{
-                const res = await axios.get("http://localhost:8080/api/v1/me");
+                const res = await axios.get("http://localhost:8080/api/v1/me", {
+                    withCredentials: true,
+                });
             if(res.status === 200){
                 return res.data;
             }

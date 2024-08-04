@@ -14,22 +14,23 @@ class RoomManager {
     addUserToRoom(roomId, user) {
         const room = this.getRoom(roomId);
         if (room && room.users.length < 2) {
+            user.setScore(0);
             room.users.push(user);
         }
         else {
-            throw new Error('Room does not exist');
+            user.emit({ type: 'error', message: 'Room is full' });
         }
     }
     removeUserFromRoom(roomId, user) {
         const room = this.getRoom(roomId);
         if (room && room.users.length >= 1) {
-            if (room.users.length === 1) {
+            room.users = room.users.filter((u) => u.getId() !== user.getId());
+            if (room.users.length === 0) {
                 this.removeRoom(roomId);
             }
-            room.users = room.users.filter((u) => u.getId() !== user.getId());
         }
         else {
-            throw new Error('Room does not exist');
+            user.emit({ type: 'error', message: 'Room does not exist' });
         }
     }
     removeUser(userId) {
@@ -49,6 +50,7 @@ class RoomManager {
     }
     createRoom(room) {
         this.rooms.set(room.id, room);
+        return room;
     }
     removeRoom(roomId) {
         this.rooms.delete(roomId);

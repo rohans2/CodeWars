@@ -26,7 +26,7 @@ export class RoomManager{
             user.setScore(0);
             room.users.push(user);
         }else{
-            throw new Error('Room does not exist');
+            user.emit({type: 'error', message: 'Room is full'});
         }
 
     }
@@ -39,7 +39,7 @@ export class RoomManager{
                 this.removeRoom(roomId);
             }
         }else{
-            throw new Error('Room does not exist');
+            user.emit({type: 'error', message: 'Room does not exist'});
         }
     }
 
@@ -63,6 +63,7 @@ export class RoomManager{
 
     public createRoom(room:Room){
         this.rooms.set(room.id, room);
+        return room;
     }
 
     public removeRoom(roomId: string){
