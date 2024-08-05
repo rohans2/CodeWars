@@ -50,7 +50,7 @@ export class WebSocketManager {
     }
     }
 
-    sendMessage(message: any){
+    async sendMessage(message: any){
       const messageToSend = {
         ...message,
         id: this.id++
@@ -59,7 +59,7 @@ export class WebSocketManager {
         this.bufferedMessages.push(messageToSend);
         return;
     }
-      this.ws.send(JSON.stringify(messageToSend));
+      await this.ws.send(JSON.stringify(messageToSend));
     }
 
     async registerCallback(type:string, callback:any){

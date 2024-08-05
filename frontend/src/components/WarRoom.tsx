@@ -4,7 +4,7 @@ import { Sidebar } from "./Sidebar";
 import { LanguageSelector } from "./LanguageSelector";
 import { useEffect, useState } from "react";
 import { WebSocketManager } from "../utils/WebSocketManager";
-import { errorType, Problem, updateType } from "../utils/types";
+import { errorType, Problem, Room, updateType } from "../utils/types";
 import axios from "axios";
 import { ProblemComponent } from "./Problem";
 import { LANGUAGE_MAPPING } from "../utils/constants";
@@ -23,10 +23,18 @@ export const WarRoom = ({ room }: { room: string; password?: string }) => {
   const [language, setLanguage] = useState("cpp");
   const [problem, setProblem] = useState<Problem | null>(null);
   const [problemStatus, setProblemStatus] = useState<string>("");
+  const [roomDetails, setRoomDetails] = useState<Room | null>(null);
 
   useEffect(() => {
     setConnected(true);
     //WebSocketManager.getInstance().sendMessage({ type: "join", roomId: room });
+
+    WebSocketManager.getInstance().registerCallback(
+      "roomDetails",
+      (data: any) => {
+        setRoomDetails(data.room);
+      }
+    );
 
     WebSocketManager.getInstance().registerCallback(
       "update",
@@ -42,6 +50,10 @@ export const WarRoom = ({ room }: { room: string; password?: string }) => {
         //WebSocketManager.getInstance().close();
       }
     );
+    WebSocketManager.getInstance().sendMessage({
+      type: "getRoom",
+      roomId: room,
+    });
 
     axios
       .get(`http://localhost:8080/api/v1/user/${"HARD"}/random-problem`, {
@@ -77,13 +89,14 @@ export const WarRoom = ({ room }: { room: string; password?: string }) => {
 
   return (
     <>
-      <Sidebar room={room} connected={connected} scores={scores} />
+      <Sidebar room={roomDetails} connected={connected} />
       <div className="grid grid-cols-2 gap-x-5 h-[90vh]">
         <div className="ml-5 mt-6  p-6 min-w-1/2 overflow-auto">
           <ProblemComponent problem={problem} />
         </div>
         <div className="flex flex-col gap-y-2 p-5 h-[85vh]">
           <LanguageSelector language={language} setLanguage={setLanguage} />
+
           <Editor
             defaultLanguage="cpp"
             defaultValue="// Your code here"

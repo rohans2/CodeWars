@@ -41,11 +41,11 @@ export const CreateRoom = ({ onJoin }: { onJoin: (room: Room) => void }) => {
     // if (userPassword) {
     console.log("join called");
     //add await to make sure the message is processed before onJoin is called
-    WebSocketManager.getInstance().sendMessage({
+    await WebSocketManager.getInstance().sendMessage({
       type: "join",
       roomId: room.id,
     });
-    await new Promise((res) => setTimeout(res, 1000));
+    
     console.log("error:", error);
     if (error === "" && room.users.length <= 2) {
       console.log("join called inside");

@@ -1,20 +1,16 @@
 import { useState } from "react";
+import { Room } from "../utils/types";
 
 export const Sidebar = ({
   room,
   connected,
-  scores,
 }: {
-  room: string;
+  room: Room | null;
   connected: boolean;
-  scores: {
-    score: number;
-    userId: string;
-  }[];
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  console.log(scores);
   console.log(connected);
+  console.log("room details:", room);
   return (
     <>
       {isOpen ? (
@@ -50,15 +46,25 @@ export const Sidebar = ({
         }`}
       >
         <div className="flex flex-col gap-y-10 justify-center items-center">
-          <h2>Room: {room}</h2>
+          <h2>Room: {room?.name}</h2>
           <h3 className="text-xl font-semibold text-white mt-20 ">Score</h3>
           <div className="flex w-full gap-x-20 justify-between">
-            <div className="flex justify-center w-1/2 items-center">
+            {room?.users.map((user, index) => (
+              <div
+                className="flex justify-center w-1/2 items-center"
+                key={user?.name || "null"}
+              >
+                <h3 className=" text-xl font-semibold text-white">
+                  {user.name || "User " + (index + 1)}
+                </h3>
+              </div>
+            ))}
+            {/* <div className="flex justify-center w-1/2 items-center">
               <h3 className=" text-xl font-semibold text-white">User 1</h3>
             </div>
             <div className="flex justify-center w-1/2 items-center">
               <h3 className=" text-xl font-semibold text-white">User 2</h3>
-            </div>
+            </div> */}
           </div>
           <div className="flex w-full bg-red-500 gap-x-20 justify-between">
             <div className="flex justify-center w-1/2 bg-black items-center">
