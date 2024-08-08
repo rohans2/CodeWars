@@ -57,7 +57,7 @@ export class User {
     // }
     this.joinRoom(roomId);
     RoomManager.getInstance().getRoom(roomId)?.users.forEach((user) => {
-      user.emit({ type: 'joined', users: RoomManager.getInstance().getRoom(roomId)!.users });
+      user.emit({ type: 'roomDetails', roomId, room: RoomManager.getInstance().getRoom(roomId) });
     })
 
     // if (RoomManager.getInstance().getRoom(roomId)!.users.length === 2) {
@@ -97,9 +97,10 @@ export class User {
         }
         case 'answer': {
           const { roomId } = data;
+          const { score } = data;
           const user = RoomManager.getInstance().getRoom(roomId)!.users.find((user) => user.ws === this.ws);
           if (user) {
-            user.setScore(user.getScore() + 1);
+            user.setScore(score);
             const scores = RoomManager.getInstance().getRoom(roomId)!.users.map((user) => {
               return { id: user.id, score: user.getScore() };
             });

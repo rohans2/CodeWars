@@ -2,18 +2,15 @@
 import { Editor } from "@monaco-editor/react";
 import { Sidebar } from "./Sidebar";
 import { LanguageSelector } from "./LanguageSelector";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { WebSocketManager } from "../utils/WebSocketManager";
-import { errorType, Problem, Room, updateType } from "../utils/types";
+import { errorType, Problem, Room, Score, updateType } from "../utils/types";
 import axios from "axios";
 import { ProblemComponent } from "./Problem";
 import { LANGUAGE_MAPPING } from "../utils/constants";
 import { ProblemSubmitBar } from "./ProblemSubmitBar";
-
-interface Score {
-  score: number;
-  userId: string;
-}
+import { Popup } from "./Popup";
+import Timer from "./Countdown";
 
 export const WarRoom = ({ room }: { room: string; password?: string }) => {
   const [connected, setConnected] = useState(false);
@@ -23,7 +20,9 @@ export const WarRoom = ({ room }: { room: string; password?: string }) => {
   const [language, setLanguage] = useState("cpp");
   const [problem, setProblem] = useState<Problem | null>(null);
   const [problemStatus, setProblemStatus] = useState<string>("");
+
   const [roomDetails, setRoomDetails] = useState<Room | null>(null);
+  const [countDownTime, setCountDownTime] = useState(3);
 
   useEffect(() => {
     setConnected(true);
@@ -89,7 +88,25 @@ export const WarRoom = ({ room }: { room: string; password?: string }) => {
 
   return (
     <>
-      <Sidebar room={roomDetails} connected={connected} />
+      {roomDetails?.users.length == 1 ? (
+        <Popup>
+          <p>Waiting for other player to join...</p>
+        </Popup>
+      ) : null}
+      {roomDetails?.users.length == 2 && countDownTime > 0 ? (
+        <Popup>
+          <Timer
+            countDownTime={countDownTime}
+            setCountDownTime={setCountDownTime}
+          />
+        </Popup>
+      ) : null}
+      <Sidebar
+        room={roomDetails}
+        connected={connected}
+        scores={scores}
+        setScores={setScores}
+      />
       <div className="grid grid-cols-2 gap-x-5 h-[90vh]">
         <div className="ml-5 mt-6  p-6 min-w-1/2 overflow-auto">
           <ProblemComponent problem={problem} />
@@ -120,6 +137,8 @@ export const WarRoom = ({ room }: { room: string; password?: string }) => {
             slug={problem.slug}
             problemStatus={problemStatus}
             setProblemStatus={setProblemStatus}
+            isWarRoom={true}
+            roomId={room}
           />
         </div>
       </div>

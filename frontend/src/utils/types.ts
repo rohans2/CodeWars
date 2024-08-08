@@ -16,10 +16,10 @@ export type Example = {
 
 export type User = {
   email: string;
-  name?:string;
+  name?: string;
   role: "USER" | "ADMIN";
 }
-interface Score {
+export interface Score {
   score: number;
   userId: string;
 }
@@ -34,9 +34,10 @@ export type errorType = {
   message: string;
 }
 
-export interface Room{
+export interface Room {
   id: string;
   name?: string
   users: User[];
   password?: string;
 }
+

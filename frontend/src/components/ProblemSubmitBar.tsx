@@ -1,6 +1,8 @@
 import axios from "axios";
 import { CheckIcon, CircleX, ClockIcon } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { DIFFICULTY_MAPPING, SCORE_MAPPING } from "../utils/constants";
+import { WebSocketManager } from "../utils/WebSocketManager";
 
 enum SubmitStatus {
   SUBMIT = "SUBMIT",
@@ -16,6 +18,8 @@ export const ProblemSubmitBar = ({
   problemId,
   problemStatus,
   setProblemStatus,
+  isWarRoom,
+  roomId,
 }: {
   code: string;
   languageId: number;
@@ -23,8 +27,11 @@ export const ProblemSubmitBar = ({
   problemId: string;
   problemStatus?: string;
   setProblemStatus?: (status: string) => void;
+  isWarRoom?: boolean;
+  roomId?: string;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const problemNumber = useRef(0);
 
   const toggle = () => {
     setIsOpen(!isOpen);
@@ -58,14 +65,48 @@ export const ProblemSubmitBar = ({
         setStatus(SubmitStatus.ACCEPTED);
         setTestCases(res.data.submission.testCases);
         alert("Submission accepted!");
+        if (setProblemStatus) setProblemStatus("ACCEPTED");
+        updateScores(testCases);
         return;
       } else {
         setStatus(SubmitStatus.FAILED);
         alert("Submission Rejected!");
         setTestCases(res.data.submission.testCases);
+        if (setProblemStatus) setProblemStatus("REJECTED");
+        updateScores(testCases);
         return;
       }
     }
+  };
+
+  const updateScores = (testCases: any[]) => {
+    const testCasesPassed = testCases.filter(
+      (testCase) => testCase.status_id === 3
+    ).length;
+    const totalTestCases = testCases.length;
+
+    console.log(testCasesPassed / totalTestCases);
+    const score = Math.round(
+      (testCasesPassed / totalTestCases) * SCORE_MAPPING[problemNumber.current]
+    );
+    WebSocketManager.getInstance().sendMessage(
+      JSON.stringify({
+        type: "answer",
+        score,
+        roomId,
+      })
+    );
+  };
+
+  const nextQuestion = async () => {
+    const res = await axios.get(
+      `http://localhost:8080/api/v1/user/${
+        DIFFICULTY_MAPPING[problemNumber.current]
+      }/random-problem`,
+      { withCredentials: true }
+    );
+    problemNumber.current = problemNumber.current + 1;
+    console.log(res.data);
   };
 
   const submit = async () => {
@@ -132,18 +173,30 @@ export const ProblemSubmitBar = ({
               type="button"
               disabled={status === SubmitStatus.PENDING}
               onClick={submit}
-              className="h-full text-black bg-blue-200  hover:bg-blue-100 focus:outline-none    font-medium text-sm px-8 py-4 text-center m-0"
+              className="h-full text-black bg-blue-200  hover:bg-blue-100 focus:outline-none font-medium text-sm px-8 py-4 text-center m-0"
             >
               {status === SubmitStatus.PENDING ? "Running" : "Run"}
             </button>
             <button
               type="button"
-              onClick={submit}
+              onClick={() => {}}
               disabled={status === SubmitStatus.PENDING}
-              className="h-full text-white bg-blue-600  hover:bg-blue-700 focus:outline-none    font-medium text-sm px-8 py-4 text-center m-0"
+              className="h-full text-white bg-blue-600  hover:bg-blue-700 focus:outline-none font-medium text-sm px-8 py-4 text-center m-0"
             >
               {status === SubmitStatus.PENDING ? "Submitting" : "Submit"}
             </button>
+            {isWarRoom && (
+              <button
+                type="button"
+                disabled={
+                  status === SubmitStatus.PENDING || problemNumber.current === 4
+                }
+                onClick={nextQuestion}
+                className="h-full text-white bg-blue-800  hover:bg-blue-900 focus:outline-none font-medium text-sm px-8 py-4 text-center m-0"
+              >
+                Next
+              </button>
+            )}
           </div>
         </button>
       </h2>

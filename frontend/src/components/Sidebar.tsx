@@ -1,12 +1,16 @@
 import { useState } from "react";
-import { Room } from "../utils/types";
+import { Room, Score } from "../utils/types";
 
 export const Sidebar = ({
   room,
   connected,
+  scores,
+  setScores,
 }: {
   room: Room | null;
   connected: boolean;
+  scores: Score[];
+  setScores: (scores: Score[]) => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   console.log(connected);

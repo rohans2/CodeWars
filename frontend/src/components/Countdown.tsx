@@ -1,26 +1,24 @@
-import { LegacyRef, useCallback, useEffect, useRef } from "react";
+import { LegacyRef, useEffect, useRef } from "react";
 const Timer = ({
   countDownTime,
   setCountDownTime,
 }: {
   countDownTime: number;
-  setCountDownTime: (time: number) => void;
+  setCountDownTime: (countDownTime: number) => void;
 }) => {
-  const secondCircle = useRef<LegacyRef<SVGCircleElement> | undefined>();
+  const secondCircle = useRef<LegacyRef<SVGCircleElement> | undefined>(null);
 
-  const startCountDown = useCallback(() => {
-    const interval = setInterval(() => {
-      setCountDownTime(countDownTime - 1);
-    }, 1000);
-    if (countDownTime === 0) {
-      clearInterval(interval);
-    }
-  }, [setCountDownTime, countDownTime]);
   useEffect(() => {
-    startCountDown();
-  }, [startCountDown]);
-  return (
-    <div className="flex min-h-screen h-max md:h-screen flex-col md:flex-row justify-center items-center bg-gradient-to-l sm:bg-gradient-to-t from-[#88adf1] to-[#374b9c]">
+    if (countDownTime > 0) {
+      const interval = setInterval(() => {
+        setCountDownTime(countDownTime - 1);
+      }, 1000);
+
+      return () => clearInterval(interval); // Clear interval on component unmount
+    }
+  }, [countDownTime, setCountDownTime]);
+  return countDownTime <= 0 ? null : (
+    <div className="flex min-h-screen h-max md:h-screen flex-col md:flex-row justify-center items-center ">
       <div className="relative">
         <svg className="-rotate-90 h-48 w-48">
           <circle

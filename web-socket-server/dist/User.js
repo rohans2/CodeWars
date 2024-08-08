@@ -58,7 +58,7 @@ class User {
             // }
             this.joinRoom(roomId);
             (_b = RoomManager_1.RoomManager.getInstance().getRoom(roomId)) === null || _b === void 0 ? void 0 : _b.users.forEach((user) => {
-                user.emit({ type: 'joined', users: RoomManager_1.RoomManager.getInstance().getRoom(roomId).users });
+                user.emit({ type: 'roomDetails', roomId, room: RoomManager_1.RoomManager.getInstance().getRoom(roomId) });
             });
             // if (RoomManager.getInstance().getRoom(roomId)!.users.length === 2) {
             //   RoomManager.getInstance().getRoom(roomId)!.users.forEach((user) => {
