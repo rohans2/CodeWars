@@ -37,7 +37,12 @@ export type errorType = {
 export interface Room {
   id: string;
   name?: string
-  users: User[];
+  users: WarRoomUser[];
   password?: string;
 }
 
+export type WarRoomUser = {
+  id: string;
+  name?: string;
+  score: number;
+}

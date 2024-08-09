@@ -43,14 +43,14 @@ const submissionSchema = z.object({
 type signInType = z.infer<typeof signInSchema>
 type signUpType = z.infer<typeof signUpSchema>
 
-userAuthRouter.post("/signin", async (req,res) => {
+userAuthRouter.post("/signin", async (req, res) => {
     const success = signInSchema.safeParse(req.body);
-    if(!success){
+    if (!success) {
         return res.status(422).json({
             message: "Invalid inputs"
         })
     }
-    if(!req.body.email || !req.body.password || req.body.email.length == 0 || req.body.password.length == 0 ){ 
+    if (!req.body.email || !req.body.password || req.body.email.length == 0 || req.body.password.length == 0) {
         return res.status(422).json({
             message: "Invalid inputs"
         })
@@ -63,22 +63,22 @@ userAuthRouter.post("/signin", async (req,res) => {
             role: "USER"
         }
     });
-    
-    if(!user){
+
+    if (!user) {
         return res.status(404).json({
             message: "User not found"
         })
     }
-    
+
     const passwordMatch = await bcrypt.compare(req.body.password, user.password)
-   
-    if(!passwordMatch){
+
+    if (!passwordMatch) {
         return res.status(401).json({
             message: "Wrong password"
         })
     }
 
-    const token =  jwt.sign({
+    const token = jwt.sign({
         email: user.email
     }, process.env.JWT_SECRET!);
 
@@ -89,14 +89,14 @@ userAuthRouter.post("/signin", async (req,res) => {
 
 })
 
-userAuthRouter.post("/signup", async (req,res) => {
+userAuthRouter.post("/signup", async (req, res) => {
     const success = signUpSchema.safeParse(req.body);
-    if(!success){
+    if (!success) {
         return res.status(422).json({
             message: "Invalid inputs"
         })
     }
-    if(!req.body.email || !req.body.password || req.body.email.length == 0 || req.body.password.length == 0 ){ 
+    if (!req.body.email || !req.body.password || req.body.email.length == 0 || req.body.password.length == 0) {
         return res.status(422).json({
             message: "Invalid inputs"
         })
@@ -111,7 +111,7 @@ userAuthRouter.post("/signup", async (req,res) => {
         }
     })
 
-    if(!user){
+    if (!user) {
         return res.status(400).json({
             message: "User already exists"
         })
@@ -122,14 +122,14 @@ userAuthRouter.post("/signup", async (req,res) => {
     })
 })
 
-userAuthRouter.post("/logout", (req,res) => {
+userAuthRouter.post("/logout", (req, res) => {
     res.cookie("token", "");
     res.json({
         message: "Logged out"
     })
 })
 
-userAuthRouter.get("/problem/:slug", userMiddleware, async (req,res) => {
+userAuthRouter.get("/problem/:slug", userMiddleware, async (req, res) => {
     const slug = req.params.slug;
 
     const problem = await prisma.problem.findUnique({
@@ -137,8 +137,8 @@ userAuthRouter.get("/problem/:slug", userMiddleware, async (req,res) => {
             slug: slug
         }
     });
-    
-    if(!problem){
+
+    if (!problem) {
         return res.status(404).json({
             message: "Problem not found"
         })
@@ -149,10 +149,10 @@ userAuthRouter.get("/problem/:slug", userMiddleware, async (req,res) => {
     })
 })
 
-userAuthRouter.post("/problem/submit", userMiddleware, async (req,res) => {
+userAuthRouter.post("/problem/submit", userMiddleware, async (req, res) => {
     // Implement problem submission, test case execution on EC2, using Redis queue and Judge0
     const success = submissionSchema.safeParse(req.body);
-    if(!success){
+    if (!success) {
         return res.status(422).json({
             message: "Invalid inputs"
         })
@@ -165,7 +165,7 @@ userAuthRouter.post("/problem/submit", userMiddleware, async (req,res) => {
         }
     });
 
-    if(!problem){
+    if (!problem) {
         return res.status(404).json({
             message: "Problem not found"
         })
@@ -180,7 +180,7 @@ userAuthRouter.post("/problem/submit", userMiddleware, async (req,res) => {
                     source_code: req.body.code,
                     stdin: input,
                     expected_output: problemArgs.outputs[index],
-                    callback_url: `${process.env.SUBMISSION_WEBHOOK_URL}/submission` 
+                    callback_url: `${process.env.SUBMISSION_WEBHOOK_URL}/submission`
                 }
             })
         }
@@ -209,9 +209,9 @@ userAuthRouter.post("/problem/submit", userMiddleware, async (req,res) => {
     })
 })
 
-userAuthRouter.get("/submission/:id", userMiddleware, async (req,res) => {
+userAuthRouter.get("/submission/:id", userMiddleware, async (req, res) => {
     const id = req.params.id;
-    if(!id){
+    if (!id) {
         return res.status(400).json({
             message: "Invalid id"
         })
@@ -219,7 +219,7 @@ userAuthRouter.get("/submission/:id", userMiddleware, async (req,res) => {
     let submission = await prisma.submission.findUnique({
         where: {
             id: id
-        }, 
+        },
         include: {
             testCases: true
         }
@@ -230,7 +230,7 @@ userAuthRouter.get("/submission/:id", userMiddleware, async (req,res) => {
         return testCase.status_id === 2 || testCase.status_id === 1;
     });
 
-    if(testCasesPending?.length === 0){
+    if (testCasesPending?.length === 0) {
         submission = await prisma.submission.update({
             where: {
                 id: id
@@ -244,9 +244,9 @@ userAuthRouter.get("/submission/:id", userMiddleware, async (req,res) => {
         });
     }
 
-    
 
-    if(!submission) {
+
+    if (!submission) {
         return res.json(404).json({
             message: "Submission not found"
         })
@@ -256,22 +256,29 @@ userAuthRouter.get("/submission/:id", userMiddleware, async (req,res) => {
     })
 })
 
-userAuthRouter.get("/problems", userMiddleware, async (req,res) => {    
-        const problems = await prisma.problem.findMany();
-        res.json({
-            problems
-        })
+userAuthRouter.get("/problems", userMiddleware, async (req, res) => {
+    const problems = await prisma.problem.findMany();
+    res.json({
+        problems
+    })
 })
 
-userAuthRouter.get("/:difficulty/random-problem", userMiddleware, async(req, res) => {
-    const problemCount = await prisma.problem.count();
-    const skip = Math.floor(Math.random() * problemCount);
-   
+userAuthRouter.get("/:difficulty/random-problem", userMiddleware, async (req, res) => {
     const difficulty = req.params.difficulty;
-    
+    const problemCount = await prisma.problem.count(({
+        where: {
+            difficulty: req.params.difficulty as "EASY" | "MEDIUM" | "HARD"
+        }
+    }));
+    const skip = Math.floor(Math.random() * problemCount);
+    console.log(skip);
+
+
+
+    console.log(difficulty);
     const problem = await prisma.problem.findFirst({
         take: 1,
-        skip: skip, 
+        skip: skip,
         where: {
             difficulty: difficulty as "EASY" | "MEDIUM" | "HARD"
         },
@@ -279,6 +286,7 @@ userAuthRouter.get("/:difficulty/random-problem", userMiddleware, async(req, res
             id: "asc"
         }
     })
+    console.log(problem);
     return res.json({
         problem
     })

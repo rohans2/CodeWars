@@ -55,7 +55,7 @@ export const WarRoom = ({ room }: { room: string; password?: string }) => {
     });
 
     axios
-      .get(`http://localhost:8080/api/v1/user/${"HARD"}/random-problem`, {
+      .get(`http://localhost:8080/api/v1/user/${"EASY"}/random-problem`, {
         withCredentials: true,
       })
       .then((res) => {
@@ -74,13 +74,6 @@ export const WarRoom = ({ room }: { room: string; password?: string }) => {
       // }
     };
   }, [room]);
-
-  const handleAnswer = () => {
-    WebSocketManager.getInstance().sendMessage({
-      type: "answer",
-      roomId: room,
-    });
-  };
 
   if (!problem) {
     return <div>Loading...</div>;
@@ -139,6 +132,7 @@ export const WarRoom = ({ room }: { room: string; password?: string }) => {
             setProblemStatus={setProblemStatus}
             isWarRoom={true}
             roomId={room}
+            setProblem={setProblem}
           />
         </div>
       </div>

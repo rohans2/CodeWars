@@ -45,38 +45,31 @@ export const Sidebar = ({
       )}
 
       <div
-        className={`top-0 left-0 w-[35vw] bg-gray-800 ease-in-out duration-300  p-10 pr-20 text-white fixed h-full z-40 ${
+        className={`top-0 left-0 w-[40vw] bg-gray-800 ease-in-out duration-300  p-10 pr-20 text-white fixed h-full z-40 ${
           isOpen ? "translate-x-0 " : "-translate-x-full"
         }`}
       >
         <div className="flex flex-col gap-y-10 justify-center items-center">
           <h2>Room: {room?.name}</h2>
           <h3 className="text-xl font-semibold text-white mt-20 ">Score</h3>
-          <div className="flex w-full gap-x-20 justify-between">
+          <div className="flex w-full justify-between">
             {room?.users.map((user, index) => (
-              <div
-                className="flex justify-center w-1/2 items-center"
-                key={user?.name || "null"}
-              >
-                <h3 className=" text-xl font-semibold text-white">
-                  {user.name || "User " + (index + 1)}
-                </h3>
+              <div className="flex flex-col w-full justify-between items-center">
+                <div
+                  className="flex justify-center w-1/2 items-center"
+                  key={user?.name || "null"}
+                >
+                  <h3 className="w-full text-xl font-semibold text-white flex justify-center  items-center bg-blue-600">
+                    {user.name || "User " + (index + 1)}
+                  </h3>
+                </div>
+                <div className="flex justify-center w-1/2 bg-black items-center">
+                  <h4 className="w-full text-lg font-semibold text-white flex justify-center  items-center">
+                    {user.score}
+                  </h4>
+                </div>
               </div>
             ))}
-            {/* <div className="flex justify-center w-1/2 items-center">
-              <h3 className=" text-xl font-semibold text-white">User 1</h3>
-            </div>
-            <div className="flex justify-center w-1/2 items-center">
-              <h3 className=" text-xl font-semibold text-white">User 2</h3>
-            </div> */}
-          </div>
-          <div className="flex w-full bg-red-500 gap-x-20 justify-between">
-            <div className="flex justify-center w-1/2 bg-black items-center">
-              <h4 className=" text-lg font-semibold text-white">2</h4>
-            </div>
-            <div className="flex justify-center w-1/2 bg-black items-center">
-              <h4 className=" text-lg font-semibold text-white">3</h4>
-            </div>
           </div>
         </div>
       </div>

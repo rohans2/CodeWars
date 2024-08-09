@@ -95,9 +95,10 @@ class User {
                 }
                 case 'answer': {
                     const { roomId } = data;
+                    const { score } = data;
                     const user = RoomManager_1.RoomManager.getInstance().getRoom(roomId).users.find((user) => user.ws === this.ws);
                     if (user) {
-                        user.setScore(user.getScore() + 1);
+                        user.setScore(score);
                         const scores = RoomManager_1.RoomManager.getInstance().getRoom(roomId).users.map((user) => {
                             return { id: user.id, score: user.getScore() };
                         });

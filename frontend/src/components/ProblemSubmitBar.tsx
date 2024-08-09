@@ -3,6 +3,7 @@ import { CheckIcon, CircleX, ClockIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import { DIFFICULTY_MAPPING, SCORE_MAPPING } from "../utils/constants";
 import { WebSocketManager } from "../utils/WebSocketManager";
+import { Problem } from "../utils/types";
 
 enum SubmitStatus {
   SUBMIT = "SUBMIT",
@@ -20,6 +21,7 @@ export const ProblemSubmitBar = ({
   setProblemStatus,
   isWarRoom,
   roomId,
+  setProblem,
 }: {
   code: string;
   languageId: number;
@@ -29,9 +31,10 @@ export const ProblemSubmitBar = ({
   setProblemStatus?: (status: string) => void;
   isWarRoom?: boolean;
   roomId?: string;
+  setProblem?: (problem: Problem) => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const problemNumber = useRef(0);
+  const problemNumber = useRef(1);
 
   const toggle = () => {
     setIsOpen(!isOpen);
@@ -99,6 +102,8 @@ export const ProblemSubmitBar = ({
   };
 
   const nextQuestion = async () => {
+    console.log(problemNumber.current);
+    console.log(DIFFICULTY_MAPPING[problemNumber.current]);
     const res = await axios.get(
       `http://localhost:8080/api/v1/user/${
         DIFFICULTY_MAPPING[problemNumber.current]
@@ -107,6 +112,7 @@ export const ProblemSubmitBar = ({
     );
     problemNumber.current = problemNumber.current + 1;
     console.log(res.data);
+    if (setProblem) setProblem(res.data.problem);
   };
 
   const submit = async () => {
@@ -179,7 +185,7 @@ export const ProblemSubmitBar = ({
             </button>
             <button
               type="button"
-              onClick={() => {}}
+              onClick={submit}
               disabled={status === SubmitStatus.PENDING}
               className="h-full text-white bg-blue-600  hover:bg-blue-700 focus:outline-none font-medium text-sm px-8 py-4 text-center m-0"
             >
@@ -189,7 +195,7 @@ export const ProblemSubmitBar = ({
               <button
                 type="button"
                 disabled={
-                  status === SubmitStatus.PENDING || problemNumber.current === 4
+                  status === SubmitStatus.PENDING || problemNumber.current === 5
                 }
                 onClick={nextQuestion}
                 className="h-full text-white bg-blue-800  hover:bg-blue-900 focus:outline-none font-medium text-sm px-8 py-4 text-center m-0"
