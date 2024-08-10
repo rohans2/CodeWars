@@ -40,6 +40,17 @@ const submissionSchema = z.object({
     languageId: z.number(),
 })
 
+const roomSchema = z.object({
+    name: z.string(),
+    password: z.string().optional(),
+    Users: z.array(z.object({
+        name: z.string(),
+        score: z.number(),
+        problemsSolved: z.number(),
+        problemsAttempted: z.number(),
+    }))
+})
+
 type signInType = z.infer<typeof signInSchema>
 type signUpType = z.infer<typeof signUpSchema>
 
@@ -291,3 +302,63 @@ userAuthRouter.get("/:difficulty/random-problem", userMiddleware, async (req, re
         problem
     })
 })
+
+userAuthRouter.get("/room/:id", userMiddleware, async (req, res) => {
+    const id = req.params.id;
+    if (!id) {
+        return res.status(400).json({
+            message: "Invalid id"
+        })
+    }
+    let room = await prisma.room.findUnique({
+        where: {
+            id: id
+        },
+        include: {
+            Users: true
+        }
+    })
+
+    if (!room) {
+        return res.json(404).json({
+            message: "Room not found"
+        })
+    }
+    res.status(200).json({
+        room
+    })
+})
+
+userAuthRouter.post("/room/create", userMiddleware, async (req, res) => {
+    const success = roomSchema.safeParse(req.body);
+    if (!success) {
+        return res.status(422).json({
+            message: "Invalid inputs"
+        })
+    }
+    const room = await prisma.room.upsert({
+        where: {
+            roomId: req.body.roomId
+        },
+        create: {
+            roomId: req.body.roomId,
+            name: req.body.name,
+            password: req.body.password,
+            Users: {
+                create: req.body.Users
+            }
+        },
+        update: {
+            name: req.body.name,
+            password: req.body.password,
+            Users: {
+                create: req.body.Users
+            }
+        }
+    })
+
+    res.json({
+        room
+    })
+})
+

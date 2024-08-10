@@ -45,6 +45,16 @@ const submissionSchema = zod_1.default.object({
     code: zod_1.default.string(),
     languageId: zod_1.default.number(),
 });
+const roomSchema = zod_1.default.object({
+    name: zod_1.default.string(),
+    password: zod_1.default.string().optional(),
+    Users: zod_1.default.array(zod_1.default.object({
+        name: zod_1.default.string(),
+        score: zod_1.default.number(),
+        problemsSolved: zod_1.default.number(),
+        problemsAttempted: zod_1.default.number(),
+    }))
+});
 exports.userAuthRouter.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const success = signInSchema.safeParse(req.body);
     if (!success) {
@@ -259,5 +269,60 @@ exports.userAuthRouter.get("/:difficulty/random-problem", userMiddleware_1.userM
     console.log(problem);
     return res.json({
         problem
+    });
+}));
+exports.userAuthRouter.get("/room/:id", userMiddleware_1.userMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.params.id;
+    if (!id) {
+        return res.status(400).json({
+            message: "Invalid id"
+        });
+    }
+    let room = yield prisma.room.findUnique({
+        where: {
+            id: id
+        },
+        include: {
+            Users: true
+        }
+    });
+    if (!room) {
+        return res.json(404).json({
+            message: "Room not found"
+        });
+    }
+    res.status(200).json({
+        room
+    });
+}));
+exports.userAuthRouter.post("/room/create", userMiddleware_1.userMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const success = roomSchema.safeParse(req.body);
+    if (!success) {
+        return res.status(422).json({
+            message: "Invalid inputs"
+        });
+    }
+    const room = yield prisma.room.upsert({
+        where: {
+            roomId: req.body.roomId
+        },
+        create: {
+            roomId: req.body.roomId,
+            name: req.body.name,
+            password: req.body.password,
+            Users: {
+                create: req.body.Users
+            }
+        },
+        update: {
+            name: req.body.name,
+            password: req.body.password,
+            Users: {
+                create: req.body.Users
+            }
+        }
+    });
+    res.json({
+        room
     });
 }));

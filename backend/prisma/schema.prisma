@@ -61,6 +61,24 @@ model TestCase {
   submissionId String?
 }
 
+model Room {
+  id       String     @id @default(uuid())
+  roomId   String     @unique
+  Users    RoomUser[]
+  name     String
+  password String?
+}
+
+model RoomUser {
+  id                String @id @default(uuid())
+  roomUserId        String @unique
+  Score             Int
+  Room              Room   @relation(fields: [roomId], references: [id])
+  roomId            String
+  problemsSolved    Int
+  problemsAttempted Int
+}
+
 enum Role {
   USER
   ADMIN

@@ -5,6 +5,8 @@ import { DIFFICULTY_MAPPING, SCORE_MAPPING } from "../utils/constants";
 import { WebSocketManager } from "../utils/WebSocketManager";
 import { Problem } from "../utils/types";
 
+import { useToast } from "../components/ui/use-toast";
+
 enum SubmitStatus {
   SUBMIT = "SUBMIT",
   PENDING = "PENDING",
@@ -35,7 +37,7 @@ export const ProblemSubmitBar = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const problemNumber = useRef(1);
-
+  const { toast } = useToast();
   const toggle = () => {
     setIsOpen(!isOpen);
   };
@@ -67,13 +69,18 @@ export const ProblemSubmitBar = ({
       if (res.data.submission.status === "ACCEPTED") {
         setStatus(SubmitStatus.ACCEPTED);
         setTestCases(res.data.submission.testCases);
-        alert("Submission accepted!");
+        toast({
+          description: "Submission accepted!",
+        });
         if (setProblemStatus) setProblemStatus("ACCEPTED");
         updateScores(testCases);
         return;
       } else {
         setStatus(SubmitStatus.FAILED);
-        alert("Submission Rejected!");
+        toast({
+          description: "Submission rejected :(",
+          variant: "destructive",
+        });
         setTestCases(res.data.submission.testCases);
         if (setProblemStatus) setProblemStatus("REJECTED");
         updateScores(testCases);
@@ -117,6 +124,7 @@ export const ProblemSubmitBar = ({
 
   const submit = async () => {
     setStatus(SubmitStatus.PENDING);
+    toggle();
     setTestCases((testCases) =>
       testCases.map((testCase) => ({ ...testCase, status: "PENDING" }))
     );
@@ -150,13 +158,12 @@ export const ProblemSubmitBar = ({
       <h2 id="accordion-collapse-heading-1">
         <button
           type="button"
-          onClick={toggle}
           className="flex items-center justify-between w-full min-h-13 font-medium rtl:text-right  border border-b-0 border-gray-700    text-gray-400 bg-gray-800 "
           data-accordion-target="#accordion-collapse-body-1"
           aria-expanded="true"
           aria-controls="accordion-collapse-body-1"
         >
-          <svg
+          {/* <svg
             data-accordion-icon
             className={`w-3 h-3 transition shrink-0 ml-5 ${
               isOpen ? "rotate-180" : ""
@@ -173,7 +180,7 @@ export const ProblemSubmitBar = ({
               stroke-width="2"
               d="M9 5 5 1 1 5"
             />
-          </svg>
+          </svg> */}
           <div>
             <button
               type="button"
@@ -197,10 +204,12 @@ export const ProblemSubmitBar = ({
                 disabled={
                   status === SubmitStatus.PENDING || problemNumber.current === 5
                 }
-                onClick={nextQuestion}
+                onClick={
+                  problemNumber.current === 5 ? showResults : nextQuestion
+                }
                 className="h-full text-white bg-blue-800  hover:bg-blue-900 focus:outline-none font-medium text-sm px-8 py-4 text-center m-0"
               >
-                Next
+                {problemNumber.current === 5 ? "Submit" : "Next"}
               </button>
             )}
           </div>
@@ -253,3 +262,5 @@ const renderResult = (status: number | null) => {
       return <div className="text-gray-300">Runtime Error!</div>;
   }
 };
+
+const showResults = () => {};

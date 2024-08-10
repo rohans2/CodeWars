@@ -14,6 +14,7 @@ import { CreateRoom } from "./components/CreateRoom";
 import { AdminPanel } from "./components/AdminPanel";
 import { RecoilRoot } from "recoil";
 import { Room } from "./utils/types";
+import { WarRoomResults } from "./components/WarRoomResults";
 
 //import { useState } from "react";
 
@@ -38,6 +39,10 @@ function App() {
             <Route path="/compete/:roomId" element={<WarRoomWrapper />} />
             <Route path="/rooms" element={<CreateRoomWrapper />} />
             <Route path="/admin/post" element={<AdminPanel />} />
+            <Route
+              path="/compete/:roomId/results"
+              element={<WarRoomResults />}
+            />
           </Routes>
         </BrowserRouter>
       </RecoilRoot>
