@@ -41,10 +41,12 @@ const submissionSchema = z.object({
 })
 
 const roomSchema = z.object({
-    name: z.string(),
+    name: z.string().optional(),
     password: z.string().optional(),
+    roomId: z.string(),
     Users: z.array(z.object({
-        name: z.string(),
+        name: z.string().optional(),
+        roomUserId: z.string(),
         score: z.number(),
         problemsSolved: z.number(),
         problemsAttempted: z.number(),

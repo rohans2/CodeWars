@@ -24,6 +24,31 @@ export const WarRoom = ({ room }: { room: string; password?: string }) => {
   const [roomDetails, setRoomDetails] = useState<Room | null>(null);
   const [countDownTime, setCountDownTime] = useState(3);
 
+  const saveRoom = async (
+    problemsSolved: number,
+    problemsAttempted: number
+  ) => {
+    const res = await axios.post(
+      "http://localhost:8080/api/v1/user/room/create",
+      {
+        roomId: room,
+        name: roomDetails?.name,
+        password: roomDetails?.password,
+        Users: roomDetails?.users.map((user) => {
+          return {
+            name: user.name,
+            roomUserId: user.id,
+            score: user.score,
+            problemsSolved: problemsSolved,
+            problemsAttempted: problemsAttempted,
+          };
+        }),
+      },
+      { withCredentials: true }
+    );
+    console.log(res.data);
+  };
+
   useEffect(() => {
     setConnected(true);
     //WebSocketManager.getInstance().sendMessage({ type: "join", roomId: room });
@@ -128,11 +153,11 @@ export const WarRoom = ({ room }: { room: string; password?: string }) => {
             languageId={LANGUAGE_MAPPING[language]?.judge0}
             problemId={problem.id}
             slug={problem.slug}
-            problemStatus={problemStatus}
             setProblemStatus={setProblemStatus}
             isWarRoom={true}
             roomId={room}
             setProblem={setProblem}
+            saveRoom={saveRoom}
           />
         </div>
       </div>

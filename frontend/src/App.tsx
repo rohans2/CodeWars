@@ -41,7 +41,7 @@ function App() {
             <Route path="/admin/post" element={<AdminPanel />} />
             <Route
               path="/compete/:roomId/results"
-              element={<WarRoomResults />}
+              element={<WarRoomResultsWrapper />}
             />
           </Routes>
         </BrowserRouter>
@@ -50,6 +50,14 @@ function App() {
     </div>
   );
 }
+
+const WarRoomResultsWrapper = () => {
+  const params = useParams();
+  const { roomId } = params;
+  if (roomId) {
+    return <WarRoomResults roomId={roomId} />;
+  }
+};
 
 const CreateRoomWrapper = () => {
   const navigate = useNavigate();

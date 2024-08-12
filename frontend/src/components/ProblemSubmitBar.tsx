@@ -6,6 +6,8 @@ import { WebSocketManager } from "../utils/WebSocketManager";
 import { Problem } from "../utils/types";
 
 import { useToast } from "../components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
+import { LoadingButton } from "./LoadingButton";
 
 enum SubmitStatus {
   SUBMIT = "SUBMIT",
@@ -19,29 +21,35 @@ export const ProblemSubmitBar = ({
   languageId,
   slug,
   problemId,
-  problemStatus,
   setProblemStatus,
   isWarRoom,
   roomId,
   setProblem,
+  saveRoom,
 }: {
   code: string;
   languageId: number;
   slug: string;
   problemId: string;
-  problemStatus?: string;
   setProblemStatus?: (status: string) => void;
   isWarRoom?: boolean;
   roomId?: string;
   setProblem?: (problem: Problem) => void;
+  saveRoom?: (
+    problemsSolved: number,
+    problemsAttempted: number
+  ) => Promise<void>;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [roomStatus, setRoomStatus] = useState<string>("Idle");
   const problemNumber = useRef(1);
+  const problemsSolved = useRef(0);
   const { toast } = useToast();
   const toggle = () => {
     setIsOpen(!isOpen);
   };
 
+  const navigate = useNavigate();
   const [status, setStatus] = useState<string>(SubmitStatus.SUBMIT);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [testCases, setTestCases] = useState<any[]>([]);
@@ -72,6 +80,7 @@ export const ProblemSubmitBar = ({
         toast({
           description: "Submission accepted!",
         });
+        problemsSolved.current += 1;
         if (setProblemStatus) setProblemStatus("ACCEPTED");
         updateScores(testCases);
         return;
@@ -205,11 +214,29 @@ export const ProblemSubmitBar = ({
                   status === SubmitStatus.PENDING || problemNumber.current === 5
                 }
                 onClick={
-                  problemNumber.current === 5 ? showResults : nextQuestion
+                  problemNumber.current === 5
+                    ? async () => {
+                        if (saveRoom) {
+                          setRoomStatus("SUBMITTING");
+                          await saveRoom(
+                            problemsSolved.current,
+                            problemNumber.current
+                          );
+                          setRoomStatus("SUBMITTED");
+                        }
+                        navigate(`/compete/${roomId}/results`);
+                      }
+                    : nextQuestion
                 }
                 className="h-full text-white bg-blue-800  hover:bg-blue-900 focus:outline-none font-medium text-sm px-8 py-4 text-center m-0"
               >
-                {problemNumber.current === 5 ? "Submit" : "Next"}
+                {roomStatus === "SUBMITTING" ? (
+                  <LoadingButton />
+                ) : problemNumber.current === 5 ? (
+                  "Submit"
+                ) : (
+                  "Next"
+                )}
               </button>
             )}
           </div>
@@ -262,5 +289,3 @@ const renderResult = (status: number | null) => {
       return <div className="text-gray-300">Runtime Error!</div>;
   }
 };
-
-const showResults = () => {};
