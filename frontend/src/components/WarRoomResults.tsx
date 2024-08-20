@@ -1,3 +1,4 @@
+import { WebSocketManager } from "../utils/WebSocketManager";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
@@ -22,7 +23,17 @@ export const WarRoomResults = ({ roomId }: { roomId: string }) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    WebSocketManager.getInstance().registerCallback(
+      "submit",
+      (data: { roomId: string }) => {
+        const roomId = data.roomId;
+        getRoomDetails(roomId).then((res) => {
+          setRoomDetails(res.data.room);
+        });
+      }
+    );
     setLoading(true);
+
     getRoomDetails(roomId).then((res) => {
       setRoomDetails(res.data.room);
       setLoading(false);

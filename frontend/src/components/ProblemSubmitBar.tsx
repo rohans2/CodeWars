@@ -82,7 +82,10 @@ export const ProblemSubmitBar = ({
         });
         problemsSolved.current += 1;
         if (setProblemStatus) setProblemStatus("ACCEPTED");
-        updateScores(testCases);
+        if (isWarRoom) {
+          updateScores(testCases);
+        }
+
         return;
       } else {
         setStatus(SubmitStatus.FAILED);
@@ -103,18 +106,19 @@ export const ProblemSubmitBar = ({
       (testCase) => testCase.status_id === 3
     ).length;
     const totalTestCases = testCases.length;
+    console.log("tesdCases", testCases);
+    console.log("testCasesPassed", testCasesPassed);
+    console.log("totalTestCases", totalTestCases);
 
     console.log(testCasesPassed / totalTestCases);
     const score = Math.round(
       (testCasesPassed / totalTestCases) * SCORE_MAPPING[problemNumber.current]
     );
-    WebSocketManager.getInstance().sendMessage(
-      JSON.stringify({
-        type: "answer",
-        score,
-        roomId,
-      })
-    );
+    WebSocketManager.getInstance().sendMessage({
+      type: "answer",
+      score,
+      roomId,
+    });
   };
 
   const nextQuestion = async () => {
@@ -129,6 +133,7 @@ export const ProblemSubmitBar = ({
     problemNumber.current = problemNumber.current + 1;
     console.log(res.data);
     if (setProblem) setProblem(res.data.problem);
+    setTestCases([]);
   };
 
   const submit = async () => {
@@ -163,6 +168,7 @@ export const ProblemSubmitBar = ({
       id="accordion-collapse"
       data-accordion="collapse"
       className="fixed bottom-0 right-0 w-full"
+      onClick={toggle}
     >
       <h2 id="accordion-collapse-heading-1">
         <button
@@ -210,9 +216,7 @@ export const ProblemSubmitBar = ({
             {isWarRoom && (
               <button
                 type="button"
-                disabled={
-                  status === SubmitStatus.PENDING || problemNumber.current === 5
-                }
+                disabled={status === SubmitStatus.PENDING}
                 onClick={
                   problemNumber.current === 5
                     ? async () => {
@@ -223,8 +227,12 @@ export const ProblemSubmitBar = ({
                             problemNumber.current
                           );
                           setRoomStatus("SUBMITTED");
+                          WebSocketManager.getInstance().sendMessage({
+                            type: "submit",
+                            roomId: roomId,
+                          });
+                          navigate(`/compete/${roomId}/results`);
                         }
-                        navigate(`/compete/${roomId}/results`);
                       }
                     : nextQuestion
                 }
@@ -233,7 +241,7 @@ export const ProblemSubmitBar = ({
                 {roomStatus === "SUBMITTING" ? (
                   <LoadingButton />
                 ) : problemNumber.current === 5 ? (
-                  "Submit"
+                  "Exit War Room"
                 ) : (
                   "Next"
                 )}

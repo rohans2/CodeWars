@@ -7,7 +7,8 @@
 - [x] add multi language support
 - [x] Ui improvements
 - [x] Add Recoil for tracking user data
-- [ ] Add Singleton, pub subs for web sockets
+- [x] Add Singleton class for web sockets
+- [ ] Add Redis Pub subs for scaling web sockets
 - [ ] Add upload functionality for test case upload
 - [x] Add html parser for rendering problem description and examples correctly
 - [x] Link judge0 and webhook to update UI correctly
@@ -24,4 +25,4 @@
 - [ ] CI/CD
 - [ ] Rate limiting
 - [ ] Domains, AWS instances
-- [ ] Auto Scaling?
+- [ ] Auto Scaling - Kubernetes

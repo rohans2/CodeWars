@@ -15,6 +15,7 @@ import { AdminPanel } from "./components/AdminPanel";
 import { RecoilRoot } from "recoil";
 import { Room } from "./utils/types";
 import { WarRoomResults } from "./components/WarRoomResults";
+import { Landing } from "./components/Landing";
 
 //import { useState } from "react";
 
@@ -25,9 +26,12 @@ function App() {
     <div>
       <RecoilRoot>
         <BrowserRouter>
-          <AppBar />
+          {window.location.href !== "http://localhost:5173/" ? (
+            <AppBar />
+          ) : null}
           <Routes>
             <Route path="/problem/:slug" element={<CodeSubmission />} />
+            <Route path="/" element={<Landing />} />
             <Route path="/signin" element={<Signin isSignIn={true} />} />
             <Route
               path="/admin/signin"

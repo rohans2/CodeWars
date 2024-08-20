@@ -46,10 +46,12 @@ const submissionSchema = zod_1.default.object({
     languageId: zod_1.default.number(),
 });
 const roomSchema = zod_1.default.object({
-    name: zod_1.default.string(),
+    name: zod_1.default.string().optional(),
     password: zod_1.default.string().optional(),
+    roomId: zod_1.default.string(),
     Users: zod_1.default.array(zod_1.default.object({
-        name: zod_1.default.string(),
+        name: zod_1.default.string().optional(),
+        roomUserId: zod_1.default.string(),
         score: zod_1.default.number(),
         problemsSolved: zod_1.default.number(),
         problemsAttempted: zod_1.default.number(),
