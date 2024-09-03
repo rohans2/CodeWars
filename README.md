@@ -9,7 +9,7 @@
 - [x] Add Recoil for tracking user data
 - [x] Add Singleton class for web sockets
 - [ ] Add Redis Pub subs for scaling web sockets
-- [ ] Add upload functionality for test case upload
+- [ ] Add upload functionality for test cases
 - [x] Add html parser for rendering problem description and examples correctly
 - [x] Link judge0 and webhook to update UI correctly
 - [x] AppBar changes
@@ -21,8 +21,8 @@
 - [ ] Can integrate mediasoup for vcalls
 - [ ] Rate limiting
 - [x] Auth
-- [ ] Deployments
-- [ ] CI/CD
+- [x] Deployments
+- [x] CI/CD
 - [ ] Rate limiting
-- [ ] Domains, AWS instances
+- [x] Domains, AWS instances
 - [ ] Auto Scaling - Kubernetes

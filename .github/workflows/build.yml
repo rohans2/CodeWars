@@ -1,0 +1,25 @@
+name: Build on PR
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Generate Prisma Client
+        run: cd backend && npx prisma generate
+
+      - name: Run Build
+        run: cd backend && npm run dev && cd ../submission-webhook && npm run dev && cd ../web-socket-server && npm run dev && cd ../

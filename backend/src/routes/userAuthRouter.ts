@@ -115,24 +115,32 @@ userAuthRouter.post("/signup", async (req, res) => {
         })
     }
     const password = await bcrypt.hash(req.body.password, 10);
-    const user = await prisma.user.create({
-        data: {
-            name: req.body?.name || "",
-            email: req.body.email,
-            password: password,
-            role: "USER"
-        }
-    })
+    try {
+        const user = await prisma.user.create({
+            data: {
+                name: req.body?.name || "",
+                email: req.body.email,
+                password: password,
+                role: "USER"
+            }
+        })
 
-    if (!user) {
+        if (!user) {
+            return res.status(400).json({
+                message: "User already exists"
+            })
+        }
+        res.json({
+            message: "user created successfully",
+            id: user.id
+        })
+    } catch (e) {
+        console.log(e);
         return res.status(400).json({
             message: "User already exists"
         })
     }
-    res.json({
-        message: "user created successfully",
-        id: user.id
-    })
+
 })
 
 userAuthRouter.post("/logout", (req, res) => {

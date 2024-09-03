@@ -117,16 +117,18 @@ export const Signin = ({
                     }
                   );
                 }
-                setLoading(false);
+
                 if (res.status === 200) {
                   setUser({
                     email: email,
                     name: name,
                     role: isAdmin ? "ADMIN" : "USER",
                   });
+                  setLoading(false);
                   navigate("/problems");
                 } else {
                   alert("Something went wrong");
+                  setLoading(false);
                 }
               }}
               type="submit"
