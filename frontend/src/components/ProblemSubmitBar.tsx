@@ -155,6 +155,14 @@ export const ProblemSubmitBar = ({
           withCredentials: true,
         }
       );
+      if (res.status === 429) {
+        toast({
+          description:
+            "You have exceeded the submission limit. Please try again after 60 seconds.",
+          variant: "destructive",
+        });
+        return;
+      }
       poll(res.data.id, 10);
     } catch (e) {
       alert("Not able to submit the problem. Please try again later.");

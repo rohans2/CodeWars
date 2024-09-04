@@ -23,6 +23,6 @@
 - [x] Auth
 - [x] Deployments
 - [x] CI/CD
-- [ ] Rate limiting
+- [x] Rate limiting
 - [x] Domains, AWS instances
 - [ ] Auto Scaling - Kubernetes

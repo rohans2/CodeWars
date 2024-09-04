@@ -4,6 +4,7 @@ import { useState } from "react";
 import { userAtom } from "../atoms/user";
 import { useSetRecoilState } from "recoil";
 import { LoadingButton } from "./LoadingButton";
+import { useToast } from "../components/ui/use-toast";
 
 export const Signin = ({
   isSignIn,
@@ -17,6 +18,7 @@ export const Signin = ({
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
   const setUser = useSetRecoilState(userAtom);
   return (
     <section className="bg-gray-900">
@@ -117,7 +119,15 @@ export const Signin = ({
                     }
                   );
                 }
-
+                if (res.status === 429) {
+                  toast({
+                    description:
+                      "Too many attempts, Please try again after 60 seconds.",
+                    variant: "destructive",
+                  });
+                  setLoading(false);
+                  return;
+                }
                 if (res.status === 200) {
                   setUser({
                     email: email,
