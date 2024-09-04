@@ -12,6 +12,7 @@ import bcrypt from "bcrypt";
 import { userMiddleware } from "../middlewares/userMiddleware";
 import { getProblem } from "../utils/utils";
 import axios from "axios";
+import rateLimit from "express-rate-limit";
 
 const prisma = new PrismaClient();
 userAuthRouter.use(cookieParser());
@@ -22,6 +23,21 @@ userAuthRouter.use(cors({
 }));
 
 
+const signInLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 3, // limit each IP to 5 requests per windowMs
+    message: "Too many requests, please try again after 60 seconds",
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+})
+
+const submissionLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 2, // limit each IP to 5 requests per windowMs
+    message: "You attempted to submit the code too many times, please try again after 60 seconds",
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+})
 
 const signInSchema = z.object({
     email: z.string().email(),
@@ -56,7 +72,7 @@ const roomSchema = z.object({
 type signInType = z.infer<typeof signInSchema>
 type signUpType = z.infer<typeof signUpSchema>
 
-userAuthRouter.post("/signin", async (req, res) => {
+userAuthRouter.post("/signin", signInLimiter, async (req, res) => {
     const success = signInSchema.safeParse(req.body);
     if (!success) {
         return res.status(422).json({
@@ -102,7 +118,7 @@ userAuthRouter.post("/signin", async (req, res) => {
 
 })
 
-userAuthRouter.post("/signup", async (req, res) => {
+userAuthRouter.post("/signup", signInLimiter, async (req, res) => {
     const success = signUpSchema.safeParse(req.body);
     if (!success) {
         return res.status(422).json({
@@ -170,7 +186,7 @@ userAuthRouter.get("/problem/:slug", userMiddleware, async (req, res) => {
     })
 })
 
-userAuthRouter.post("/problem/submit", userMiddleware, async (req, res) => {
+userAuthRouter.post("/problem/submit", userMiddleware, submissionLimiter, async (req, res) => {
     // Implement problem submission, test case execution on EC2, using Redis queue and Judge0
     const success = submissionSchema.safeParse(req.body);
     if (!success) {

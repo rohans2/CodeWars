@@ -23,6 +23,7 @@
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
     "jsonwebtoken": "^9.0.2",
     "prisma": "^5.15.0",
     "react-router-dom": "^6.23.1",
