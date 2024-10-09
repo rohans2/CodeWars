@@ -84,6 +84,6 @@ wss.on('connection', (ws) => {
 //         }
 //       }
 //     })
-server.listen(3001, () => {
-    console.log('Server is running on port 3001');
+server.listen(3002, () => {
+    console.log('Server is running on port 3002');
 });

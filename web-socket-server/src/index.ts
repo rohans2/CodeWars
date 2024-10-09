@@ -24,12 +24,12 @@ wss.on('connection', (ws) => {
 //     users: User[];
 //     password: string;
 //   }
-  
+
 //   const rooms: {[key: string]: Room} = {};
 //   wss.on('connection', (ws) => {
 //     ws.on('message', (message) => {
 //       const data = JSON.parse(message.toString());
-  
+
 //       switch(data.type){
 //         case 'join': {
 //           const { roomId, password } = data;
@@ -86,11 +86,10 @@ wss.on('connection', (ws) => {
 //         }
 //       }
 //     })
-  
-    
-  
-  
-  server.listen(3001,() => {
-    console.log('Server is running on port 3001');
-  })
-  
+
+
+
+
+server.listen(3002, () => {
+  console.log('Server is running on port 3002');
+})
