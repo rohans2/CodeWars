@@ -15,7 +15,7 @@ export const Sidebar = ({
   const [isOpen, setIsOpen] = useState(false);
   console.log(connected);
   console.log("room details:", room);
-  console.log("scores:", scores);
+  console.log("scores:", scores, ", setScores:", setScores);
   return (
     <>
       {isOpen ? (

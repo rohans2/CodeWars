@@ -19,7 +19,6 @@
 - [x] Postgres for storing submissions/ results/ ratings/ scores in competing rooms
 - [ ] Can use LiveBlocks for real time chat/ rooms
 - [ ] Can integrate mediasoup for vcalls
-- [ ] Rate limiting
 - [x] Auth
 - [x] Deployments
 - [x] CI/CD

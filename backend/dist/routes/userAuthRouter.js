@@ -24,6 +24,7 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const userMiddleware_1 = require("../middlewares/userMiddleware");
 const utils_1 = require("../utils/utils");
 const axios_1 = __importDefault(require("axios"));
+const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
 const prisma = new client_1.PrismaClient();
 exports.userAuthRouter.use((0, cookie_parser_1.default)());
 exports.userAuthRouter.use(express_1.default.json());
@@ -31,6 +32,20 @@ exports.userAuthRouter.use((0, cors_1.default)({
     credentials: true,
     origin: "http://localhost:5173"
 }));
+const signInLimiter = (0, express_rate_limit_1.default)({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 3, // limit each IP to 5 requests per windowMs
+    message: "Too many requests, please try again after 60 seconds",
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+const submissionLimiter = (0, express_rate_limit_1.default)({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 2, // limit each IP to 5 requests per windowMs
+    message: "You attempted to submit the code too many times, please try again after 60 seconds",
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
 const signInSchema = zod_1.default.object({
     email: zod_1.default.string().email(),
     password: zod_1.default.string().min(8)
@@ -57,7 +72,7 @@ const roomSchema = zod_1.default.object({
         problemsAttempted: zod_1.default.number(),
     }))
 });
-exports.userAuthRouter.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.userAuthRouter.post("/signin", signInLimiter, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const success = signInSchema.safeParse(req.body);
     if (!success) {
         return res.status(422).json({
@@ -95,7 +110,7 @@ exports.userAuthRouter.post("/signin", (req, res) => __awaiter(void 0, void 0, v
         message: "Logged In!"
     });
 }));
-exports.userAuthRouter.post("/signup", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.userAuthRouter.post("/signup", signInLimiter, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const success = signUpSchema.safeParse(req.body);
     if (!success) {
@@ -109,23 +124,31 @@ exports.userAuthRouter.post("/signup", (req, res) => __awaiter(void 0, void 0, v
         });
     }
     const password = yield bcrypt_1.default.hash(req.body.password, 10);
-    const user = yield prisma.user.create({
-        data: {
-            name: ((_a = req.body) === null || _a === void 0 ? void 0 : _a.name) || "",
-            email: req.body.email,
-            password: password,
-            role: "USER"
+    try {
+        const user = yield prisma.user.create({
+            data: {
+                name: ((_a = req.body) === null || _a === void 0 ? void 0 : _a.name) || "",
+                email: req.body.email,
+                password: password,
+                role: "USER"
+            }
+        });
+        if (!user) {
+            return res.status(400).json({
+                message: "User already exists"
+            });
         }
-    });
-    if (!user) {
+        res.json({
+            message: "user created successfully",
+            id: user.id
+        });
+    }
+    catch (e) {
+        console.log(e);
         return res.status(400).json({
             message: "User already exists"
         });
     }
-    res.json({
-        message: "user created successfully",
-        id: user.id
-    });
 }));
 exports.userAuthRouter.post("/logout", (req, res) => {
     res.cookie("token", "");
@@ -149,7 +172,7 @@ exports.userAuthRouter.get("/problem/:slug", userMiddleware_1.userMiddleware, (r
         problem
     });
 }));
-exports.userAuthRouter.post("/problem/submit", userMiddleware_1.userMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.userAuthRouter.post("/problem/submit", userMiddleware_1.userMiddleware, submissionLimiter, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // Implement problem submission, test case execution on EC2, using Redis queue and Judge0
     const success = submissionSchema.safeParse(req.body);
     if (!success) {

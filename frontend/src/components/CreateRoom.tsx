@@ -10,14 +10,14 @@ export const CreateRoom = ({ onJoin }: { onJoin: (room: Room) => void }) => {
 
   useEffect(() => {
     const instance = WebSocketManager.getInstance();
-    instance.registerCallback("error", (data) => {
+    instance.registerCallback("error", (data: { message: string }) => {
       setError(data.message);
       console.log("error");
     });
-    instance.registerCallback("rooms", (data) => {
+    instance.registerCallback("rooms", (data: { rooms: Room[] }) => {
       setRooms(data.rooms);
     });
-    instance.registerCallback("created", (data) => {
+    instance.registerCallback("created", (data: { room: Room }) => {
       setRooms([...rooms, data.room]);
       onJoin(data.room);
     });
@@ -45,7 +45,7 @@ export const CreateRoom = ({ onJoin }: { onJoin: (room: Room) => void }) => {
       type: "join",
       roomId: room.id,
     });
-    
+
     console.log("error:", error);
     if (error === "" && room.users.length <= 2) {
       console.log("join called inside");

@@ -4,6 +4,7 @@ import axios from "axios";
 
 export const AdminPanel = () => {
   const [problem, setProblem] = useState<Problem>({
+    id: "",
     slug: "",
     title: "",
     description: "",

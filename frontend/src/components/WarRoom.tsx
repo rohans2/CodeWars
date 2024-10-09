@@ -2,7 +2,7 @@
 import { Editor } from "@monaco-editor/react";
 import { Sidebar } from "./Sidebar";
 import { LanguageSelector } from "./LanguageSelector";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { WebSocketManager } from "../utils/WebSocketManager";
 import { errorType, Problem, Room, Score, updateType } from "../utils/types";
 import axios from "axios";
@@ -20,6 +20,8 @@ export const WarRoom = ({ room }: { room: string; password?: string }) => {
   const [language, setLanguage] = useState("cpp");
   const [problem, setProblem] = useState<Problem | null>(null);
   const [problemStatus, setProblemStatus] = useState<string>("");
+  console.log("problemStatus:", problemStatus);
+  console.log("error:", error);
 
   const [roomDetails, setRoomDetails] = useState<Room | null>(null);
   const [countDownTime, setCountDownTime] = useState(3);
