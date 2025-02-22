@@ -1,4 +1,5 @@
 ## A code compete platform which connects 2 users, who can race each other to solve given coding problems.
+![codewars](https://github.com/user-attachments/assets/76f2ec59-1d09-4c60-b043-6ebc0db1f19c)
 
 #TODO:
 
