@@ -6,6 +6,7 @@
 - [x] add Judge0 integration for submission
 - [x] add multi language support
 - [x] Ui improvements
+- [x] Open AI APIs for generating solutions
 - [x] Add Recoil for tracking user data
 - [x] Add Singleton class for web sockets
 - [ ] Add Redis Pub subs for scaling web sockets
