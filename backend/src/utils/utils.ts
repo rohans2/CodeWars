@@ -63,3 +63,9 @@ const getOutputs = async(slug: string): Promise<string[]> => {
     })
 }
 
+export const generateSystemPrompt = (language: string): string => {
+    return `Give the solution of the given problem in ${language}. Return just the code, nothing else.`;
+}
+    
+
+

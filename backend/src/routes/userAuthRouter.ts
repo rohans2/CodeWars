@@ -10,9 +10,10 @@ import z from "zod";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { userMiddleware } from "../middlewares/userMiddleware";
-import { getProblem } from "../utils/utils";
+import { generateSystemPrompt, getProblem } from "../utils/utils";
 import axios from "axios";
 import rateLimit from "express-rate-limit";
+import OpenAI from "openai";
 
 const prisma = new PrismaClient();
 userAuthRouter.use(cookieParser());
@@ -22,7 +23,7 @@ userAuthRouter.use(cors({
     origin: "http://localhost:5173"
 }));
 
-
+const client = new OpenAI();
 const signInLimiter = rateLimit({
     windowMs: 1 * 60 * 1000, // 1 minute
     max: 3, // limit each IP to 5 requests per windowMs
@@ -388,3 +389,38 @@ userAuthRouter.post("/room/create", userMiddleware, async (req, res) => {
     })
 })
 
+userAuthRouter.post("/problem/requestSolution", userMiddleware, async (req, res) => {
+    const problem = req.body.problem;
+    const language = req.body.language;
+    console.log('req.body', req.body);
+    console.log('language', language);
+    const stream = await client.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: problem.description }, { role: "system", content: generateSystemPrompt(language) }],
+        max_tokens: 8000,
+        stream: true,
+        store: true
+    });
+
+    //chunk.choices[0]?.delta?.content || ""
+    for await (const chunk of stream) {
+        try {
+            const data = chunk.choices[0].delta.content
+            if (data) {
+                res.write(`${data}`)
+                console.log(data);
+            }
+        }
+        catch (e) {
+            res.status(404).json({
+                message: "Error inn fetching response. Please try again."
+            })
+        }
+    }
+
+
+
+
+
+
+});

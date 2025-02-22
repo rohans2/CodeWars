@@ -26,6 +26,7 @@
     "express": "^4.19.2",
     "express-rate-limit": "^7.4.0",
     "jsonwebtoken": "^9.0.2",
+    "openai": "^4.83.0",
     "prisma": "^5.15.0",
     "react-router-dom": "^6.23.1",
     "typescript": "^5.6.2",

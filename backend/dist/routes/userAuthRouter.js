@@ -8,6 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -25,6 +32,7 @@ const userMiddleware_1 = require("../middlewares/userMiddleware");
 const utils_1 = require("../utils/utils");
 const axios_1 = __importDefault(require("axios"));
 const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
+const openai_1 = __importDefault(require("openai"));
 const prisma = new client_1.PrismaClient();
 exports.userAuthRouter.use((0, cookie_parser_1.default)());
 exports.userAuthRouter.use(express_1.default.json());
@@ -32,6 +40,7 @@ exports.userAuthRouter.use((0, cors_1.default)({
     credentials: true,
     origin: "http://localhost:5173"
 }));
+const client = new openai_1.default();
 const signInLimiter = (0, express_rate_limit_1.default)({
     windowMs: 1 * 60 * 1000, // 1 minute
     max: 3, // limit each IP to 5 requests per windowMs
@@ -350,4 +359,45 @@ exports.userAuthRouter.post("/room/create", userMiddleware_1.userMiddleware, (re
     res.json({
         room
     });
+}));
+exports.userAuthRouter.post("/problem/requestSolution", userMiddleware_1.userMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, e_1, _b, _c;
+    const problem = req.body.problem;
+    const language = req.body.language;
+    console.log('req.body', req.body);
+    console.log('language', language);
+    const stream = yield client.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: problem.description }, { role: "system", content: (0, utils_1.generateSystemPrompt)(language) }],
+        max_tokens: 8000,
+        stream: true,
+        store: true
+    });
+    try {
+        //chunk.choices[0]?.delta?.content || ""
+        for (var _d = true, stream_1 = __asyncValues(stream), stream_1_1; stream_1_1 = yield stream_1.next(), _a = stream_1_1.done, !_a; _d = true) {
+            _c = stream_1_1.value;
+            _d = false;
+            const chunk = _c;
+            try {
+                const data = chunk.choices[0].delta.content;
+                if (data) {
+                    res.write(`${data}`);
+                    console.log(data);
+                }
+            }
+            catch (e) {
+                res.status(404).json({
+                    message: "Error inn fetching response. Please try again."
+                });
+            }
+        }
+    }
+    catch (e_1_1) { e_1 = { error: e_1_1 }; }
+    finally {
+        try {
+            if (!_d && !_a && (_b = stream_1.return)) yield _b.call(stream_1);
+        }
+        finally { if (e_1) throw e_1.error; }
+    }
 }));
